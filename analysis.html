@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PIT WALL — 比赛分析</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,500;0,600;0,700;1,700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0C11; --panel:#10141C; --panel-2:#171C27; --line:#232A38; --line-soft:#1B212D;
+    --text:#EDEFF3; --muted:#78829A; --purple:#B57BFF; --green:#34D77B; --yellow:#FFC53D;
+    --red:#E10600; --accent:#4C8DFF; --kerb-w:14px;
+  }
+  *{box-sizing:border-box;}
+  html{scrollbar-color:var(--line) var(--bg);}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1100px 520px at 85% -12%, rgba(225,6,0,0.07), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(76,141,255,0.05), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Chakra Petch', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);} a:hover{color:var(--text);}
+  .mono{font-family:'JetBrains Mono', monospace;}
+  header{padding:26px 32px 18px; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:16px;}
+  .brand-eyebrow{font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.28em; color:var(--red); text-transform:uppercase; margin-bottom:7px;}
+  h1{margin:0; font-size:30px; font-weight:700; font-style:italic; letter-spacing:0.05em; text-transform:uppercase; line-height:1;}
+  h1 .thin{font-weight:500; color:var(--muted);}
+  .kerb{height:5px; background:repeating-linear-gradient(-45deg, var(--red) 0 var(--kerb-w), #E9EAEC var(--kerb-w) calc(var(--kerb-w)*2)); border-bottom:1px solid var(--line);}
+  .tabs{display:flex; gap:4px; padding:0 32px; background:var(--panel); border-bottom:1px solid var(--line); overflow-x:auto;}
+  .tab{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); text-decoration:none; padding:13px 16px; border-bottom:2px solid transparent; transition:color .15s ease; white-space:nowrap;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--text); border-bottom-color:var(--red);}
+
+  .controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+  select{
+    appearance:none; -webkit-appearance:none;
+    background:var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2378829A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center;
+    color:var(--text); border:1px solid var(--line); border-radius:5px;
+    padding:9px 32px 9px 12px; font-family:'JetBrains Mono',monospace; font-size:12px;
+    letter-spacing:0.04em; min-width:140px; cursor:pointer; transition:border-color .15s ease;
+  }
+  select:hover{border-color:var(--muted);}
+  select:focus-visible{outline:2px solid var(--accent); outline-offset:1px;}
+  .status{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:0.05em; display:flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid var(--line-soft); border-radius:5px; background:rgba(16,20,28,0.6);}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+
+  main{padding:26px 32px 40px; max-width:1280px; margin:0 auto;}
+  .section-label{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.2em;
+    color:var(--muted); text-transform:uppercase; margin:34px 0 14px;
+    display:flex; align-items:center; gap:12px;
+  }
+  .section-label:first-child{margin-top:0;}
+  .section-label::after{content:''; flex:1; height:1px; background:var(--line);}
+  .section-label .cn{color:var(--text);}
+
+  .hint-text{font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); line-height:1.7; margin:-6px 0 14px; letter-spacing:0.02em;}
+
+  /* ── 回放控制条 ── */
+  .replay-bar{
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    background:var(--panel); border:1px solid var(--line); border-radius:8px;
+    padding:14px 18px; margin-bottom:22px;
+    position:sticky; top:0; z-index:10;
+    box-shadow:0 8px 24px rgba(0,0,0,0.45);
+  }
+  .replay-btn{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:5px;
+    color:var(--text); font-family:'JetBrains Mono',monospace; font-size:12px;
+    padding:8px 14px; cursor:pointer; letter-spacing:0.05em; transition:border-color .15s ease, background .15s ease;
+  }
+  .replay-btn:hover{border-color:var(--muted);}
+  .replay-btn.active{background:rgba(225,6,0,0.15); border-color:rgba(225,6,0,0.5); color:#FF7B76;}
+  .lap-display{font-family:'JetBrains Mono',monospace; font-size:15px; font-weight:700; font-variant-numeric:tabular-nums; min-width:110px;}
+  .lap-display small{color:var(--muted); font-weight:400; font-size:10px;}
+  input[type=range]{
+    flex:1; min-width:180px; accent-color:var(--red); height:6px; cursor:pointer;
+  }
+  .speed-group{display:flex; gap:4px;}
+  .speed-btn{
+    background:transparent; border:1px solid var(--line-soft); border-radius:4px;
+    color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:10px;
+    padding:6px 9px; cursor:pointer; letter-spacing:0.05em;
+  }
+  .speed-btn.active{color:var(--text); border-color:var(--muted); background:var(--panel-2);}
+
+  /* ── 回放排名 + 时间线双栏 ── */
+  .replay-grid{display:grid; grid-template-columns:minmax(300px, 380px) 1fr; gap:22px; align-items:start;}
+  @media (max-width:980px){ .replay-grid{grid-template-columns:1fr;} }
+
+  .panel-box{background:var(--panel); border:1px solid var(--line-soft); border-radius:8px; overflow:hidden;}
+  .panel-box-head{
+    font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.15em;
+    color:var(--muted); text-transform:uppercase; padding:12px 16px;
+    border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap;
+  }
+
+  .rp-row{
+    display:grid; grid-template-columns:34px 1fr 30px 70px; gap:8px; align-items:center;
+    padding:7px 14px; border-bottom:1px solid var(--line-soft);
+    font-size:13px; border-left:3px solid transparent;
+  }
+  .rp-row:last-child{border-bottom:none;}
+  .rp-pos{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px; color:var(--muted); text-align:center; background:var(--panel-2); border-radius:4px; padding:2px 0;}
+  .rp-row.p1 .rp-pos{color:#0A0C11; background:var(--text);}
+  .rp-name{display:flex; align-items:center; gap:8px; min-width:0; font-weight:600; letter-spacing:0.03em;}
+  .rp-name .team-bar{width:4px; height:18px; border-radius:2px; flex-shrink:0;}
+  .rp-tyre{justify-self:center;}
+  .rp-gap{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); text-align:right; font-variant-numeric:tabular-nums;}
+  .tyre-badge{
+    display:inline-block; width:18px; height:18px; border-radius:50%; text-align:center;
+    line-height:18px; font-size:9px; font-weight:700; color:#0A0C11;
+    box-shadow:inset 0 0 0 2px rgba(10,12,17,0.35);
+  }
+  .tyre-S{background:#EF4444;} .tyre-M{background:#FBBF24;} .tyre-H{background:#E8EAED;}
+  .tyre-I{background:#22C55E;} .tyre-W{background:#3B82F6;} .tyre-U{background:var(--muted);}
+
+  /* ── 时间线 ── */
+  .filter-row{display:flex; gap:6px; flex-wrap:wrap; padding:10px 16px; border-bottom:1px solid var(--line-soft); background:rgba(10,12,17,0.35);}
+  .chip{
+    background:transparent; border:1px solid var(--line); border-radius:20px;
+    color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:10px;
+    padding:5px 12px; cursor:pointer; letter-spacing:0.05em; transition:all .15s ease;
+  }
+  .chip:hover{border-color:var(--muted); color:var(--text);}
+  .chip.active{background:var(--panel-2); border-color:var(--accent); color:var(--text);}
+  .timeline-scroll{max-height:560px; overflow-y:auto; scrollbar-width:thin;}
+  .tl-item{
+    display:grid; grid-template-columns:58px 26px 1fr; gap:10px; align-items:start;
+    padding:9px 16px; border-bottom:1px solid var(--line-soft);
+    font-size:13px; line-height:1.5;
+  }
+  .tl-item:last-child{border-bottom:none;}
+  .tl-item.future{opacity:0.25;}
+  .tl-lap{font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); padding-top:3px; letter-spacing:0.05em; white-space:nowrap;}
+  .tl-icon{font-size:14px; text-align:center; padding-top:1px;}
+  .tl-body{min-width:0;}
+  .tl-tag{
+    display:inline-block; font-family:'JetBrains Mono',monospace; font-size:9px;
+    letter-spacing:0.08em; text-transform:uppercase; padding:2px 7px; border-radius:3px;
+    margin-right:7px; vertical-align:1px;
+  }
+  .tag-flag{background:rgba(255,197,61,0.14); color:var(--yellow); border:1px solid rgba(255,197,61,0.3);}
+  .tag-sc{background:rgba(255,197,61,0.2); color:var(--yellow); border:1px solid rgba(255,197,61,0.45);}
+  .tag-pit{background:rgba(76,141,255,0.12); color:var(--accent); border:1px solid rgba(76,141,255,0.3);}
+  .tag-radio{background:rgba(52,215,123,0.1); color:var(--green); border:1px solid rgba(52,215,123,0.3);}
+  .tag-penalty{background:rgba(225,6,0,0.12); color:#FF7B76; border:1px solid rgba(225,6,0,0.35);}
+  .tag-info{background:var(--panel-2); color:var(--muted); border:1px solid var(--line);}
+  .tag-green{background:rgba(52,215,123,0.12); color:var(--green); border:1px solid rgba(52,215,123,0.3);}
+  .tl-msg{color:var(--text);}
+  .tl-msg .drv{font-weight:700;}
+  .play-radio{
+    display:inline-flex; align-items:center; gap:6px;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:20px;
+    color:var(--green); font-family:'JetBrains Mono',monospace; font-size:10px;
+    padding:4px 12px; cursor:pointer; margin-top:5px; letter-spacing:0.05em;
+    transition:border-color .15s ease;
+  }
+  .play-radio:hover{border-color:var(--green);}
+  .play-radio.playing{border-color:var(--green); box-shadow:0 0 8px rgba(52,215,123,0.3);}
+
+  /* ── 轮胎策略图 ── */
+  .strategy-wrap{padding:16px; overflow-x:auto;}
+  .strat-row{display:grid; grid-template-columns:52px 1fr; gap:10px; align-items:center; margin-bottom:7px;}
+  .strat-label{font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; text-align:right; letter-spacing:0.05em;}
+  .strat-track{display:flex; height:22px; border-radius:4px; overflow:hidden; background:var(--bg); position:relative;}
+  .strat-seg{
+    height:100%; display:flex; align-items:center; justify-content:center;
+    font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; color:#0A0C11;
+    min-width:0; overflow:hidden; white-space:nowrap;
+    border-right:2px solid var(--bg);
+  }
+  .strat-seg:last-child{border-right:none;}
+  .strat-axis{display:grid; grid-template-columns:52px 1fr; gap:10px; margin-top:4px;}
+  .strat-axis-track{display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--muted);}
+  .strat-legend{display:flex; gap:14px; flex-wrap:wrap; padding:0 16px 14px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); align-items:center;}
+  .strat-legend .tyre-badge{margin-right:5px; vertical-align:middle;}
+
+  /* ── 圈速对比 ── */
+  .cmp-controls{display:flex; gap:8px; flex-wrap:wrap; padding:14px 16px; border-bottom:1px solid var(--line-soft); align-items:center;}
+  .drv-chip{
+    display:inline-flex; align-items:center; gap:7px;
+    background:transparent; border:1px solid var(--line); border-radius:20px;
+    color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700;
+    padding:6px 13px; cursor:pointer; letter-spacing:0.05em; transition:all .15s ease;
+  }
+  .drv-chip:hover{border-color:var(--muted); color:var(--text);}
+  .drv-chip.active{color:var(--text); background:var(--panel-2);}
+  .drv-chip .cbar{width:8px; height:8px; border-radius:2px; background:var(--line);}
+  .drv-chip.active .cbar{background:var(--chip-c);}
+  .cmp-filters{display:flex; gap:6px; flex-wrap:wrap; padding:10px 16px; border-bottom:1px solid var(--line-soft); background:rgba(10,12,17,0.35); align-items:center;}
+  .cmp-filters .lbl{font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:0.08em; margin-right:4px;}
+  .chart-area{padding:18px 16px 10px;}
+  .cmp-empty{color:var(--muted); font-size:13px; padding:36px 16px; text-align:center; line-height:1.7;}
+  .cmp-stats{padding:0 16px 16px; display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:10px;}
+  .stat-card{background:var(--panel-2); border:1px solid var(--line-soft); border-radius:6px; padding:11px 13px;}
+  .stat-card .sc-name{font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; letter-spacing:0.05em; display:flex; align-items:center; gap:7px; margin-bottom:8px;}
+  .stat-card .sc-name .cbar{width:8px; height:8px; border-radius:2px;}
+  .stat-card .sc-row{display:flex; justify-content:space-between; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); padding:2.5px 0;}
+  .stat-card .sc-row strong{color:var(--text); font-weight:500; font-variant-numeric:tabular-nums;}
+
+  /* ── 术语提示（新手模式） ── */
+  .term{border-bottom:1px dotted var(--muted); cursor:help; position:relative;}
+  .term:hover::after{
+    content:attr(data-tip);
+    position:absolute; left:0; bottom:calc(100% + 7px); z-index:50;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:6px;
+    padding:8px 11px; width:230px; font-size:11px; line-height:1.6; color:var(--text);
+    font-family:'Chakra Petch',sans-serif; font-weight:400; font-style:normal;
+    letter-spacing:0.02em; text-transform:none;
+    box-shadow:0 10px 26px rgba(0,0,0,0.5); pointer-events:none;
+  }
+
+  .skeleton{height:70px; border-radius:8px; margin-bottom:12px;
+    background:linear-gradient(90deg, var(--panel) 25%, var(--panel-2) 50%, var(--panel) 75%);
+    background-size:200% 100%; animation:shimmer 1.4s infinite;}
+  @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+  .error-banner{margin:16px 0; padding:12px 16px; background:rgba(225,6,0,0.07); border:1px solid rgba(225,6,0,0.35); border-radius:6px; color:#FF7B76; font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.6;}
+  .empty-state{color:var(--muted); font-size:13px; padding:30px 16px; text-align:center; line-height:1.7;}
+  footer{padding:18px 32px 30px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); border-top:1px solid var(--line); line-height:1.7;}
+  footer a{color:var(--accent); text-decoration:none;} footer a:hover{text-decoration:underline;}
+  @media (prefers-reduced-motion: reduce){ *{animation:none !important; transition:none !important;} }
+  @media (max-width:560px){ header, main, footer{padding-left:16px; padding-right:16px;} .tabs{padding:0 16px;} }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="brand-eyebrow">Race Replay &amp; Strategy</div>
+    <h1>分析 <span class="thin">Analysis</span></h1>
+  </div>
+  <div class="controls">
+    <select id="yearSelect" aria-label="赛季"></select>
+    <select id="meetingSelect" aria-label="大奖赛"><option>加载中…</option></select>
+    <select id="sessionSelect" aria-label="节次"><option>—</option></select>
+    <div class="status" role="status"><span class="dot" id="statusDot"></span><span id="statusText">连接中…</span></div>
+  </div>
+</header>
+<div class="kerb" aria-hidden="true"></div>
+<nav class="tabs" aria-label="页面导航">
+  <a class="tab" href="index.html">计时台 Timing</a>
+  <a class="tab active" href="analysis.html" aria-current="page">分析 Analysis</a>
+  <a class="tab" href="compare.html">对比 Compare</a>
+  <a class="tab" href="schedule.html">赛程 Schedule</a>
+  <a class="tab" href="standings.html">积分榜 Standings</a>
+</nav>
+
+<main>
+  <div id="loadingWrap"><div class="skeleton" style="height:120px;"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+  <div id="errorBanner"></div>
+
+  <div id="content" style="display:none;">
+
+    <!-- ═══ 回放 + 时间线 ═══ -->
+    <div class="section-label"><span class="cn">比赛回放 &amp; 事件时间线</span>Replay · Timeline</div>
+    <p class="hint-text">拖动进度条到任意一圈，左侧排名、轮胎和右侧时间线同步更新。也可以点击播放，按不同倍速重看整场比赛。</p>
+
+    <div class="replay-bar">
+      <button class="replay-btn" id="playBtn">▶ 播放</button>
+      <span class="lap-display mono"><span id="curLap">1</span><small> / <span id="maxLap">--</span> LAP</small></span>
+      <input type="range" id="lapSlider" min="1" max="1" value="1" step="1" aria-label="回放圈数">
+      <div class="speed-group" role="group" aria-label="播放速度">
+        <button class="speed-btn" data-speed="3000">1×</button>
+        <button class="speed-btn active" data-speed="1000">5×</button>
+        <button class="speed-btn" data-speed="400">10×</button>
+      </div>
+      <button class="replay-btn" id="liveBtn">跳到最后</button>
+    </div>
+
+    <div class="replay-grid">
+      <div class="panel-box">
+        <div class="panel-box-head"><span>排名 · <span id="rankLapLabel">LAP 1</span></span>
+          <span><span class="term" data-tip="Gap（差距）：该车手与领先者之间的累计时间差。回放中按每圈完成时间估算。">GAP?</span></span>
+        </div>
+        <div id="rankBody"><div class="empty-state">加载中…</div></div>
+      </div>
+
+      <div class="panel-box">
+        <div class="panel-box-head">
+          <span>事件时间线 · <span id="tlCount">0</span> 条</span>
+          <span style="letter-spacing:0.04em; text-transform:none;">当前圈之后的事件会变淡</span>
+        </div>
+        <div class="filter-row" id="tlFilters">
+          <button class="chip active" data-f="all">全部</button>
+          <button class="chip" data-f="flag">🟡 旗语/安全车</button>
+          <button class="chip" data-f="pit">🔧 进站</button>
+          <button class="chip" data-f="penalty">⚖️ 处罚/调查</button>
+          <button class="chip" data-f="radio">📻 无线电</button>
+          <select id="tlDriverFilter" style="min-width:110px; padding:5px 28px 5px 10px; font-size:10px;">
+            <option value="">全部车手</option>
+          </select>
+        </div>
+        <div class="timeline-scroll" id="tlBody"><div class="empty-state">加载中…</div></div>
+      </div>
+    </div>
+
+    <!-- ═══ 轮胎策略 ═══ -->
+    <div class="section-label"><span class="cn">全场轮胎策略</span>Tyre Strategy</div>
+    <p class="hint-text">每一行是一位车手，每一段颜色代表一套轮胎用了多少圈。<span class="term" data-tip="Undercut（提前进站抢位）：比对手早进站换新胎，利用新胎更快的圈速，在对手进站后反超。">什么是 Undercut？</span></p>
+    <div class="panel-box">
+      <div id="strategyBody"><div class="empty-state">加载中…</div></div>
+    </div>
+
+    <!-- ═══ 圈速对比 ═══ -->
+    <div class="section-label"><span class="cn">圈速对比</span>Lap Time Comparison</div>
+    <p class="hint-text">最多选 4 位车手对比每圈圈速。默认过滤进站圈和异常慢圈（安全车、事故圈），这样平均速度才有参考价值。</p>
+    <div class="panel-box">
+      <div class="cmp-controls" id="cmpDrivers"></div>
+      <div class="cmp-filters">
+        <span class="lbl">过滤:</span>
+        <button class="chip active" id="fltPit">进站圈</button>
+        <button class="chip active" id="fltSlow">异常慢圈 &gt;107%</button>
+      </div>
+      <div class="chart-area" id="cmpChart"><div class="cmp-empty">在上方选择 2–4 位车手开始对比</div></div>
+      <div class="cmp-stats" id="cmpStats"></div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  数据来自 <a href="https://openf1.org" target="_blank" rel="noopener">OpenF1 API</a>（社区维护，非 F1 官方）。历史比赛（2023 年起）免费访问；正在进行的比赛实时数据可能受限。无线电音频由 OpenF1 提供。
+</footer>
+
+<script>
+"use strict";
+const API = "https://api.openf1.org/v1";
+const $ = (id) => document.getElementById(id);
+
+const state = {
+  sessions: [], drivers: [], laps: [], stints: [], pits: [], rc: [], radio: [],
+  lapsByDriver: new Map(),
+  events: [],            // merged timeline, sorted
+  maxLap: 1,
+  curLap: 1,
+  playing: false,
+  playMs: 1000,
+  tlFilter: 'all',
+  tlDriver: '',
+  cmpSelected: [],       // driver_numbers
+  fltPit: true, fltSlow: true,
+  raceStart: null        // Date of race start (first lap date_start)
+};
+let sessionGen = 0, playTimer = null, curAudio = null;
+
+function esc(v){ return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function teamColor(d){ return /^[0-9A-Fa-f]{6}$/.test(d.team_colour || '') ? '#' + d.team_colour : '#78829A'; }
+function setStatus(t, live){ $('statusText').textContent = t; $('statusDot').classList.toggle('live', !!live); }
+function showError(m){ $('errorBanner').innerHTML = '<div class="error-banner">' + esc(m) + '</div>'; }
+function fmtLap(s){
+  if (s == null || isNaN(s)) return '—';
+  const m = Math.floor(s / 60);
+  return m + ':' + (s % 60).toFixed(3).padStart(6, '0');
+}
+async function getJSON(url){
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('请求失败 (' + res.status + ')');
+  return res.json();
+}
+async function getJSONSafe(url){
+  try{
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    return await res.json();
+  } catch(e){ return []; }
+}
+function drvByNum(n){ return state.drivers.find(d => d.driver_number === n); }
+function drvName(n){
+  const d = drvByNum(n);
+  return d ? (d.name_acronym || d.full_name) : '#' + n;
+}
+function drvColor(n){
+  const d = drvByNum(n);
+  return d ? teamColor(d) : '#78829A';
+}
+
+/* ── 加载会话列表 ── */
+async function init(){
+  const years = [];
+  for (let y = 2026; y >= 2023; y--) years.push(y);
+  $('yearSelect').innerHTML = years.map(y => '<option>' + y + '</option>').join('');
+  $('yearSelect').value = 2026;
+  $('yearSelect').addEventListener('change', () => loadMeetings(+$('yearSelect').value));
+  $('meetingSelect').addEventListener('change', () => loadSessions($('meetingSelect').value));
+  $('sessionSelect').addEventListener('change', () => loadSession($('sessionSelect').value));
+  wireReplayControls();
+  wireTimelineFilters();
+  await loadMeetings(2026);
+}
+
+async function loadMeetings(year){
+  setStatus('加载 ' + year + ' 赛历…');
+  $('meetingSelect').innerHTML = '<option>加载中…</option>';
+  try{
+    let meetings = await getJSON(API + '/meetings?year=' + year);
+    if (!meetings.length && year === 2026){
+      meetings = await getJSON(API + '/meetings?year=2025');
+      setStatus('暂无 2026 数据 — 显示 2025');
+    }
+    meetings.sort((a,b) => new Date(a.date_start) - new Date(b.date_start));
+    state.meetings = meetings;
+    $('meetingSelect').innerHTML = meetings.map(m =>
+      '<option value="' + esc(m.meeting_key) + '">' + esc(m.meeting_name) + '</option>').join('');
+    if (!meetings.length){ showError('该赛季暂无数据。'); return; }
+    // 默认最近一场已开始的比赛
+    const now = new Date();
+    const started = meetings.filter(m => new Date(m.date_start) <= now);
+    const target = started.length ? started[started.length - 1] : meetings[0];
+    $('meetingSelect').value = target.meeting_key;
+    await loadSessions(target.meeting_key);
+  } catch(err){ showError('加载赛历失败：' + err.message); setStatus('连接错误'); }
+}
+
+async function loadSessions(meetingKey){
+  $('sessionSelect').innerHTML = '<option>加载中…</option>';
+  try{
+    const sessions = await getJSON(API + '/sessions?meeting_key=' + meetingKey);
+    sessions.sort((a,b) => new Date(a.date_start) - new Date(b.date_start));
+    state.sessions = sessions;
+    $('sessionSelect').innerHTML = sessions.map(s =>
+      '<option value="' + esc(s.session_key) + '">' + esc(s.session_name) + '</option>').join('');
+    const race = sessions.find(s => (s.session_name||'').toLowerCase() === 'race');
+    if (sessions.length){
+      $('sessionSelect').value = (race || sessions[sessions.length-1]).session_key;
+      await loadSession($('sessionSelect').value);
+    }
+  } catch(err){ showError('加载节次失败：' + err.message); setStatus('连接错误'); }
+}
+
+/* ── 加载单场数据 ── */
+async function loadSession(sessionKey){
+  const gen = ++sessionGen;
+  stopPlay();
+  $('errorBanner').innerHTML = '';
+  $('content').style.display = 'none';
+  $('loadingWrap').style.display = 'block';
+  setStatus('加载比赛数据…');
+
+  const [drivers, laps, stints, pits, rc, radio] = await Promise.all([
+    getJSONSafe(API + '/drivers?session_key=' + sessionKey),
+    getJSONSafe(API + '/laps?session_key=' + sessionKey),
+    getJSONSafe(API + '/stints?session_key=' + sessionKey),
+    getJSONSafe(API + '/pit?session_key=' + sessionKey),
+    getJSONSafe(API + '/race_control?session_key=' + sessionKey),
+    getJSONSafe(API + '/team_radio?session_key=' + sessionKey)
+  ]);
+  if (gen !== sessionGen) return;
+
+  if (!drivers.length || !laps.length){
+    $('loadingWrap').style.display = 'none';
+    showError('这一节暂无数据，换一场比赛或节次试试。');
+    setStatus('无数据');
+    return;
+  }
+
+  state.drivers = drivers;
+  state.laps = laps;
+  state.stints = stints;
+  state.pits = pits;
+  state.rc = rc;
+  state.radio = radio;
+
+  // 按车手索引圈速
+  const byD = new Map();
+  let maxLap = 1, firstDate = null;
+  for (const l of laps){
+    let arr = byD.get(l.driver_number);
+    if (!arr){ arr = []; byD.set(l.driver_number, arr); }
+    arr.push(l);
+    if (l.lap_number > maxLap) maxLap = l.lap_number;
+    if (l.date_start && (!firstDate || new Date(l.date_start) < firstDate)) firstDate = new Date(l.date_start);
+  }
+  for (const arr of byD.values()) arr.sort((a,b) => a.lap_number - b.lap_number);
+  state.lapsByDriver = byD;
+  state.maxLap = maxLap;
+  state.curLap = maxLap;
+  state.raceStart = firstDate;
+
+  buildTimeline();
+  buildDriverFilter();
+
+  $('lapSlider').max = maxLap;
+  $('lapSlider').value = maxLap;
+  $('maxLap').textContent = maxLap;
+
+  // 默认对比：前两名完赛车手
+  state.cmpSelected = [];
+  const finishers = computeStandingsAtLap(maxLap);
+  state.cmpSelected = finishers.slice(0,2).map(r => r.n);
+
+  renderAll();
+  renderStrategy();
+  renderCmpControls();
+  renderCmp();
+
+  $('loadingWrap').style.display = 'none';
+  $('content').style.display = 'block';
+  const info = state.sessions.find(s => String(s.session_key) === String(sessionKey));
+  setStatus((info ? info.session_name : '') + ' · ' + drivers.length + ' 车手 · ' + maxLap + ' 圈');
+}
+
+/* ── 时间线构建 ──
+   把 race control / pit / radio 合并为统一事件，估算所属圈数 */
+function dateToLap(dateStr){
+  // 用全场 laps 找出该时间点大致处于第几圈（取该时间之前开始的最大 lap_number）
+  const t = new Date(dateStr).getTime();
+  let best = 1;
+  for (const l of state.laps){
+    if (l.date_start && new Date(l.date_start).getTime() <= t && l.lap_number > best) best = l.lap_number;
+  }
+  return best;
+}
+function classifyRC(m){
+  const msg = (m.message || '').toUpperCase();
+  if (m.category === 'SafetyCar' || msg.includes('SAFETY CAR') || msg.includes('VIRTUAL SAFETY'))
+    return { type:'flag', icon:'🚗', tag:'安全车', tagCls:'tag-sc' };
+  if (msg.includes('PENALTY') || msg.includes('INVESTIGATION') || msg.includes('NOTED') || msg.includes('DELETED'))
+    return { type:'penalty', icon:'⚖️', tag:'处罚/调查', tagCls:'tag-penalty' };
+  if (m.flag === 'GREEN' || msg.includes('GREEN LIGHT') || msg.includes('TRACK CLEAR'))
+    return { type:'flag', icon:'🟢', tag:'绿旗', tagCls:'tag-green' };
+  if (m.flag === 'YELLOW' || m.flag === 'DOUBLE YELLOW')
+    return { type:'flag', icon:'🟡', tag:'黄旗', tagCls:'tag-flag' };
+  if (m.flag === 'RED')
+    return { type:'flag', icon:'🔴', tag:'红旗', tagCls:'tag-penalty' };
+  if (m.flag === 'BLUE') return null; // 蓝旗太多，噪音
+  if (m.flag === 'CHEQUERED')
+    return { type:'flag', icon:'🏁', tag:'格子旗', tagCls:'tag-info' };
+  return { type:'flag', icon:'ℹ️', tag:'Race Control', tagCls:'tag-info' };
+}
+function buildTimeline(){
+  const evts = [];
+  for (const m of state.rc){
+    const c = classifyRC(m);
+    if (!c) continue;
+    evts.push({
+      lap: m.lap_number || dateToLap(m.date), date: m.date,
+      type: c.type, icon: c.icon, tag: c.tag, tagCls: c.tagCls,
+      driver: m.driver_number || null,
+      text: m.message || ''
+    });
+  }
+  for (const p of state.pits){
+    // 找 stint 判断换成什么胎
+    const st = state.stints.filter(s => s.driver_number === p.driver_number && s.lap_start >= p.lap_number).sort((a,b)=>a.lap_start-b.lap_start)[0];
+    const compound = st ? (st.compound || '').charAt(0) : '';
+    evts.push({
+      lap: p.lap_number, date: p.date,
+      type:'pit', icon:'🔧', tag:'进站', tagCls:'tag-pit',
+      driver: p.driver_number,
+      text: drvName(p.driver_number) + ' 进站' + (compound ? ' → ' + compound + ' 胎' : '') + (p.pit_duration != null ? '，停站 ' + p.pit_duration.toFixed(1) + 's' : '')
+    });
+  }
+  for (const r of state.radio){
+    evts.push({
+      lap: dateToLap(r.date), date: r.date,
+      type:'radio', icon:'📻', tag:'无线电', tagCls:'tag-radio',
+      driver: r.driver_number,
+      text: drvName(r.driver_number) + ' 车队无线电',
+      audio: r.recording_url || null
+    });
+  }
+  evts.sort((a,b) => (a.lap - b.lap) || (new Date(a.date) - new Date(b.date)));
+  state.events = evts;
+}
+function buildDriverFilter(){
+  const sel = $('tlDriverFilter');
+  const sorted = state.drivers.slice().sort((a,b) => (a.name_acronym||'').localeCompare(b.name_acronym||''));
+  sel.innerHTML = '<option value="">全部车手</option>' + sorted.map(d =>
+    '<option value="' + esc(d.driver_number) + '">' + esc(d.name_acronym || d.full_name) + '</option>').join('');
+}
+
+function renderTimeline(){
+  const f = state.tlFilter, dn = state.tlDriver;
+  const list = state.events.filter(e => {
+    if (f !== 'all' && e.type !== f) return false;
+    if (dn && String(e.driver) !== dn) return false;
+    return true;
+  });
+  $('tlCount').textContent = list.length;
+  if (!list.length){
+    $('tlBody').innerHTML = '<div class="empty-state">没有符合筛选条件的事件。</div>';
+    return;
+  }
+  $('tlBody').innerHTML = list.map((e, i) => {
+    const future = e.lap > state.curLap;
+    const audioBtn = e.audio
+      ? '<br><button class="play-radio" data-audio="' + esc(e.audio) + '">▶ 播放录音</button>'
+      : '';
+    return (
+      '<div class="tl-item' + (future ? ' future' : '') + '">' +
+        '<span class="tl-lap">LAP ' + esc(e.lap) + '</span>' +
+        '<span class="tl-icon">' + e.icon + '</span>' +
+        '<span class="tl-body"><span class="tl-tag ' + e.tagCls + '">' + esc(e.tag) + '</span>' +
+        '<span class="tl-msg">' + esc(e.text) + '</span>' + audioBtn + '</span>' +
+      '</div>'
+    );
+  }).join('');
+}
+
+function wireTimelineFilters(){
+  $('tlFilters').addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    state.tlFilter = chip.dataset.f;
+    $('tlFilters').querySelectorAll('.chip').forEach(c => c.classList.toggle('active', c === chip));
+    renderTimeline();
+  });
+  $('tlDriverFilter').addEventListener('change', () => {
+    state.tlDriver = $('tlDriverFilter').value;
+    renderTimeline();
+  });
+  // 无线电播放（事件委托）
+  $('tlBody').addEventListener('click', (e) => {
+    const btn = e.target.closest('.play-radio');
+    if (!btn) return;
+    if (curAudio){ curAudio.pause(); document.querySelectorAll('.play-radio.playing').forEach(b => { b.classList.remove('playing'); b.textContent = '▶ 播放录音'; }); }
+    if (btn.classList.contains('was-playing')){ btn.classList.remove('was-playing'); curAudio = null; return; }
+    document.querySelectorAll('.play-radio.was-playing').forEach(b => b.classList.remove('was-playing'));
+    curAudio = new Audio(btn.dataset.audio);
+    curAudio.play().catch(() => { btn.textContent = '✕ 无法播放'; });
+    btn.classList.add('playing', 'was-playing');
+    btn.textContent = '⏸ 播放中';
+    curAudio.addEventListener('ended', () => { btn.classList.remove('playing','was-playing'); btn.textContent = '▶ 播放录音'; curAudio = null; });
+  });
+}
+
+/* ── 回放：按圈计算排名 ──
+   用每位车手完成第 N 圈的累计时间排序 */
+const cumCache = new Map(); // driver -> [cumTime per lap index]
+function cumTimes(dn){
+  let c = cumCache.get(dn);
+  if (c) return c;
+  const laps = state.lapsByDriver.get(dn) || [];
+  c = new Map(); let t = 0;
+  for (const l of laps){
+    if (l.lap_duration){ t += l.lap_duration; c.set(l.lap_number, t); }
+  }
+  cumCache.set(dn, c);
+  return c;
+}
+function computeStandingsAtLap(lap){
+  const rows = [];
+  for (const d of state.drivers){
+    const cum = cumTimes(d.driver_number);
+    // 找 <= lap 的最大已完成圈
+    let done = 0, t = 0;
+    for (const [ln, ct] of cum){ if (ln <= lap && ln > done){ done = ln; t = ct; } }
+    rows.push({ n: d.driver_number, done, t });
+  }
+  rows.sort((a,b) => (b.done - a.done) || (a.t - b.t));
+  return rows;
+}
+function tyreAtLap(dn, lap){
+  const sts = state.stints.filter(s => s.driver_number === dn && s.lap_start <= lap).sort((a,b)=>b.lap_start-a.lap_start);
+  if (!sts.length) return null;
+  const s = sts[0];
+  return { c: (s.compound || 'U').charAt(0).toUpperCase(), age: lap - s.lap_start + (s.tyre_age_at_start || 0) };
+}
+function renderRanking(){
+  const lap = state.curLap;
+  $('rankLapLabel').textContent = 'LAP ' + lap;
+  const rows = computeStandingsAtLap(lap);
+  const leader = rows[0];
+  $('rankBody').innerHTML = rows.map((r, i) => {
+    const d = drvByNum(r.n);
+    if (!d) return '';
+    const color = teamColor(d);
+    let gap = '—';
+    if (i === 0) gap = 'LEADER';
+    else if (r.done === 0) gap = '—';
+    else if (r.done < leader.done) gap = '+' + (leader.done - r.done) + ' LAP';
+    else gap = '+' + (r.t - leader.t).toFixed(1) + 's';
+    const tyre = tyreAtLap(r.n, lap);
+    const tyreHtml = tyre
+      ? '<span class="tyre-badge tyre-' + esc(tyre.c) + '" title="' + esc(tyre.c) + ' 胎，已用 ' + esc(tyre.age) + ' 圈">' + esc(tyre.c) + '</span>' : '';
+    return (
+      '<div class="rp-row' + (i === 0 ? ' p1' : '') + '">' +
+        '<span class="rp-pos">' + (i+1) + '</span>' +
+        '<span class="rp-name"><span class="team-bar" style="background:' + color + '"></span>' + esc(d.name_acronym || d.full_name) + '</span>' +
+        '<span class="rp-tyre">' + tyreHtml + '</span>' +
+        '<span class="rp-gap">' + gap + '</span>' +
+      '</div>'
+    );
+  }).join('');
+}
+
+function renderAll(){
+  $('curLap').textContent = state.curLap;
+  $('lapSlider').value = state.curLap;
+  renderRanking();
+  renderTimeline();
+}
+
+function wireReplayControls(){
+  $('lapSlider').addEventListener('input', () => {
+    state.curLap = +$('lapSlider').value;
+    stopPlay();
+    renderAll();
+  });
+  $('playBtn').addEventListener('click', () => {
+    if (state.playing) stopPlay();
+    else startPlay();
+  });
+  $('liveBtn').addEventListener('click', () => {
+    stopPlay();
+    state.curLap = state.maxLap;
+    renderAll();
+  });
+  document.querySelectorAll('.speed-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.speed-btn').forEach(x => x.classList.toggle('active', x === b));
+      state.playMs = +b.dataset.speed;
+      if (state.playing){ stopPlay(); startPlay(); }
+    });
+  });
+}
+function startPlay(){
+  if (state.curLap >= state.maxLap) state.curLap = 1;
+  state.playing = true;
+  $('playBtn').textContent = '⏸ 暂停';
+  $('playBtn').classList.add('active');
+  playTimer = setInterval(() => {
+    if (state.curLap >= state.maxLap){ stopPlay(); return; }
+    state.curLap++;
+    renderAll();
+  }, state.playMs);
+}
+function stopPlay(){
+  state.playing = false;
+  if (playTimer){ clearInterval(playTimer); playTimer = null; }
+  const b = $('playBtn');
+  if (b){ b.textContent = '▶ 播放'; b.classList.remove('active'); }
+}
+
+/* ── 轮胎策略图 ── */
+const COMPOUND_COLOR = { S:'#EF4444', M:'#FBBF24', H:'#E8EAED', I:'#22C55E', W:'#3B82F6', U:'#78829A', T:'#78829A' };
+function renderStrategy(){
+  if (!state.stints.length){
+    $('strategyBody').innerHTML = '<div class="empty-state">该节没有轮胎数据。</div>';
+    return;
+  }
+  const maxLap = state.maxLap;
+  // 按最终名次排序
+  const order = computeStandingsAtLap(maxLap).map(r => r.n);
+  let html = '<div class="strategy-wrap">';
+  for (const dn of order){
+    const d = drvByNum(dn);
+    if (!d) continue;
+    const sts = state.stints.filter(s => s.driver_number === dn).sort((a,b) => a.stint_number - b.stint_number);
+    if (!sts.length) continue;
+    const color = teamColor(d);
+    let segs = '';
+    for (const s of sts){
+      const from = s.lap_start || 1;
+      const to = Math.min(s.lap_end || from, maxLap);
+      const len = Math.max(1, to - from + 1);
+      const pct = (len / maxLap * 100);
+      const c = (s.compound || 'U').charAt(0).toUpperCase();
+      segs += '<div class="strat-seg" style="width:' + pct.toFixed(2) + '%; background:' + (COMPOUND_COLOR[c] || COMPOUND_COLOR.U) + '" title="' + esc(s.compound || '?') + ' · ' + from + '–' + to + ' 圈 (' + len + ' 圈)">' + (pct > 6 ? c + ' ' + len : '') + '</div>';
+    }
+    html += '<div class="strat-row">' +
+      '<span class="strat-label" style="color:' + color + '">' + esc(d.name_acronym || d.full_name) + '</span>' +
+      '<div class="strat-track">' + segs + '</div></div>';
+  }
+  html += '<div class="strat-axis"><span></span><div class="strat-axis-track"><span>LAP 1</span><span>' + Math.round(maxLap/2) + '</span><span>' + maxLap + '</span></div></div>';
+  html += '</div>';
+  html += '<div class="strat-legend">' +
+    '<span><span class="tyre-badge tyre-S">S</span>软胎</span>' +
+    '<span><span class="tyre-badge tyre-M">M</span>中性胎</span>' +
+    '<span><span class="tyre-badge tyre-H">H</span>硬胎</span>' +
+    '<span><span class="tyre-badge tyre-I">I</span>半雨胎</span>' +
+    '<span><span class="tyre-badge tyre-W">W</span>全雨胎</span>' +
+    '<span style="margin-left:auto">鼠标悬停查看每段详情</span></div>';
+  $('strategyBody').innerHTML = html;
+}
+
+/* ── 圈速对比 ── */
+const CMP_COLORS = ['#4C8DFF', '#FF8000', '#34D77B', '#B57BFF'];
+function renderCmpControls(){
+  const order = computeStandingsAtLap(state.maxLap).map(r => r.n);
+  $('cmpDrivers').innerHTML = order.map(dn => {
+    const d = drvByNum(dn);
+    if (!d) return '';
+    const idx = state.cmpSelected.indexOf(dn);
+    const c = idx >= 0 ? CMP_COLORS[idx] : '';
+    return '<button class="drv-chip' + (idx >= 0 ? ' active' : '') + '" data-dn="' + esc(dn) + '" style="--chip-c:' + c + '">' +
+      '<span class="cbar"></span>' + esc(d.name_acronym || d.full_name) + '</button>';
+  }).join('');
+}
+$('cmpDrivers') && null;
+function wireCmp(){
+  $('cmpDrivers').addEventListener('click', (e) => {
+    const chip = e.target.closest('.drv-chip');
+    if (!chip) return;
+    const dn = +chip.dataset.dn;
+    const idx = state.cmpSelected.indexOf(dn);
+    if (idx >= 0) state.cmpSelected.splice(idx, 1);
+    else {
+      if (state.cmpSelected.length >= 4) state.cmpSelected.shift();
+      state.cmpSelected.push(dn);
+    }
+    renderCmpControls();
+    renderCmp();
+  });
+  $('fltPit').addEventListener('click', () => { state.fltPit = !state.fltPit; $('fltPit').classList.toggle('active', state.fltPit); renderCmp(); });
+  $('fltSlow').addEventListener('click', () => { state.fltSlow = !state.fltSlow; $('fltSlow').classList.toggle('active', state.fltSlow); renderCmp(); });
+}
+
+function cleanLaps(dn){
+  const laps = (state.lapsByDriver.get(dn) || []).filter(l => l.lap_duration);
+  if (!laps.length) return { all: [], clean: [] };
+  const pitLaps = new Set();
+  if (state.fltPit){
+    for (const p of state.pits.filter(p => p.driver_number === dn)){
+      pitLaps.add(p.lap_number);      // 进站圈
+      pitLaps.add(p.lap_number + 1);  // 出站圈
+    }
+  }
+  let clean = laps.filter(l => !pitLaps.has(l.lap_number) && l.lap_number > 1);
+  if (state.fltSlow && clean.length > 3){
+    const sorted = clean.map(l => l.lap_duration).sort((a,b) => a-b);
+    const median = sorted[Math.floor(sorted.length/2)];
+    clean = clean.filter(l => l.lap_duration <= median * 1.07);
+  }
+  return { all: laps, clean };
+}
+
+function renderCmp(){
+  const sel = state.cmpSelected;
+  if (sel.length < 2){
+    $('cmpChart').innerHTML = '<div class="cmp-empty">在上方选择 2–4 位车手开始对比</div>';
+    $('cmpStats').innerHTML = '';
+    return;
+  }
+  const series = sel.map((dn, i) => ({ dn, color: CMP_COLORS[i], ...cleanLaps(dn) }));
+  const allTimes = series.flatMap(s => s.clean.map(l => l.lap_duration));
+  if (!allTimes.length){
+    $('cmpChart').innerHTML = '<div class="cmp-empty">过滤后没有可用圈速，试试关闭过滤条件。</div>';
+    $('cmpStats').innerHTML = '';
+    return;
+  }
+  const minT = Math.min(...allTimes), maxT = Math.max(...allTimes);
+  const range = (maxT - minT) || 1;
+  const W = 900, H = 260, padL = 56, padR = 12, padT = 14, padB = 26;
+  const maxLap = state.maxLap;
+  const x = (lap) => padL + (lap - 1) / (maxLap - 1 || 1) * (W - padL - padR);
+  const y = (t) => padT + (t - minT) / range * (H - padT - padB);
+
+  let svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" style="min-width:560px" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="圈速对比图">';
+  // Y 轴网格（4 条）
+  for (let i = 0; i <= 4; i++){
+    const t = minT + range * i / 4;
+    const yy = y(t);
+    svg += '<line x1="' + padL + '" y1="' + yy.toFixed(1) + '" x2="' + (W-padR) + '" y2="' + yy.toFixed(1) + '" stroke="#1B212D" stroke-width="1"/>';
+    svg += '<text x="' + (padL-6) + '" y="' + (yy+3).toFixed(1) + '" font-size="9" fill="#78829A" text-anchor="end" font-family="JetBrains Mono,monospace">' + fmtLap(t) + '</text>';
+  }
+  // X 轴刻度
+  const step = maxLap > 40 ? 10 : 5;
+  for (let l = step; l <= maxLap; l += step){
+    svg += '<text x="' + x(l).toFixed(1) + '" y="' + (H-8) + '" font-size="9" fill="#78829A" text-anchor="middle" font-family="JetBrains Mono,monospace">' + l + '</text>';
+  }
+  // 数据线
+  for (const s of series){
+    if (!s.clean.length) continue;
+    // 断点：圈数不连续时断开线段
+    let d = '', prev = null;
+    for (const l of s.clean){
+      const px = x(l.lap_number).toFixed(1), py = y(l.lap_duration).toFixed(1);
+      d += (prev !== null && l.lap_number - prev <= 2 ? ' L' : ' M') + px + ',' + py;
+      prev = l.lap_number;
+    }
+    svg += '<path d="' + d + '" fill="none" stroke="' + s.color + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>';
+  }
+  svg += '</svg>';
+  $('cmpChart').innerHTML = svg;
+
+  // 统计卡片
+  $('cmpStats').innerHTML = series.map(s => {
+    const d = drvByNum(s.dn);
+    if (!d || !s.clean.length) return '';
+    const times = s.clean.map(l => l.lap_duration).sort((a,b) => a-b);
+    const median = times[Math.floor(times.length/2)];
+    const best = times[0];
+    const avg = times.reduce((a,b) => a+b, 0) / times.length;
+    // 最佳连续5圈
+    const seq = s.clean.map(l => l.lap_duration);
+    let best5 = null;
+    for (let i = 0; i + 5 <= seq.length; i++){
+      const m = seq.slice(i, i+5).reduce((a,b)=>a+b,0) / 5;
+      if (best5 === null || m < best5) best5 = m;
+    }
+    return (
+      '<div class="stat-card">' +
+        '<div class="sc-name"><span class="cbar" style="background:' + s.color + '"></span>' + esc(d.name_acronym || d.full_name) + ' <span style="color:var(--muted);font-weight:400">· ' + s.clean.length + ' 有效圈</span></div>' +
+        '<div class="sc-row"><span>最快圈</span><strong>' + fmtLap(best) + '</strong></div>' +
+        '<div class="sc-row"><span class="term" data-tip="中位圈速：把所有有效圈从快到慢排列取中间值，比平均值更不容易被个别慢圈带偏。">中位圈速 ?</span><strong>' + fmtLap(median) + '</strong></div>' +
+        '<div class="sc-row"><span>平均圈速</span><strong>' + fmtLap(avg) + '</strong></div>' +
+        (best5 ? '<div class="sc-row"><span>最佳连续5圈</span><strong>' + fmtLap(best5) + '</strong></div>' : '') +
+      '</div>'
+    );
+  }).join('');
+}
+
+wireCmp();
+init();
+</script>
+
+</body>
+</html>

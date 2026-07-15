@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PIT WALL — 积分榜</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,500;0,600;0,700;1,700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0C11; --panel:#10141C; --panel-2:#171C27; --line:#232A38; --line-soft:#1B212D;
+    --text:#EDEFF3; --muted:#78829A; --purple:#B57BFF; --green:#34D77B; --yellow:#FFC53D;
+    --red:#E10600; --accent:#4C8DFF; --kerb-w:14px;
+  }
+  *{box-sizing:border-box;}
+  html{scrollbar-color:var(--line) var(--bg);}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1100px 520px at 85% -12%, rgba(225,6,0,0.07), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(76,141,255,0.05), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Chakra Petch', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);} a:hover{color:var(--text);}
+  .mono{font-family:'JetBrains Mono', monospace;}
+  header{padding:26px 32px 18px; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:16px;}
+  .brand-eyebrow{font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.28em; color:var(--red); text-transform:uppercase; margin-bottom:7px;}
+  h1{margin:0; font-size:30px; font-weight:700; font-style:italic; letter-spacing:0.05em; text-transform:uppercase; line-height:1;}
+  h1 .thin{font-weight:500; color:var(--muted);}
+  .kerb{height:5px; background:repeating-linear-gradient(-45deg, var(--red) 0 var(--kerb-w), #E9EAEC var(--kerb-w) calc(var(--kerb-w)*2)); border-bottom:1px solid var(--line);}
+  .tabs{display:flex; gap:4px; padding:0 32px; background:var(--panel); border-bottom:1px solid var(--line);}
+  .tab{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); text-decoration:none; padding:13px 16px; border-bottom:2px solid transparent; transition:color .15s ease;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--text); border-bottom-color:var(--red);}
+  .status{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:0.05em; display:flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid var(--line-soft); border-radius:5px; background:rgba(16,20,28,0.6);}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+
+  main{padding:26px 32px 40px; max-width:1200px; margin:0 auto; display:grid; grid-template-columns:1.25fr 1fr; gap:28px; align-items:start;}
+  @media (max-width:900px){ main{grid-template-columns:1fr;} }
+  .section-label{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.2em;
+    color:var(--muted); text-transform:uppercase; margin:0 0 14px;
+    display:flex; align-items:center; gap:12px;
+  }
+  .section-label::after{content:''; flex:1; height:1px; background:var(--line);}
+
+  .st-row{
+    display:grid; grid-template-columns:40px 1fr 64px 76px; gap:10px; align-items:center;
+    padding:10px 14px; border-bottom:1px solid var(--line-soft); border-left:3px solid transparent;
+    transition:background .15s ease;
+    text-decoration:none; color:inherit; cursor:pointer;
+  }
+  .st-row:hover{background:var(--panel);}
+  .st-row.p1{background:var(--panel-2); border-left-color:var(--yellow);}
+  .st-head{
+    display:grid; grid-template-columns:40px 1fr 64px 76px; gap:10px; padding:0 14px 9px;
+    font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em;
+    color:var(--muted); text-transform:uppercase; border-bottom:1px solid var(--line);
+  }
+  .st-pos{
+    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:13px; color:var(--muted);
+    width:26px; height:23px; line-height:23px; text-align:center; border-radius:4px; background:var(--panel);
+  }
+  .st-row.p1 .st-pos{color:#0A0C11; background:var(--yellow);}
+  .st-driver{display:flex; align-items:center; gap:10px; min-width:0;}
+  .team-bar{width:4px; height:26px; border-radius:2px; flex-shrink:0;}
+  .st-name{font-size:14px; font-weight:600; letter-spacing:0.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .st-team{font-family:'JetBrains Mono',monospace; font-size:9px; letter-spacing:0.06em; color:var(--muted); text-transform:uppercase; white-space:nowrap;}
+  .st-num{font-family:'JetBrains Mono',monospace; font-size:13px; text-align:right; font-variant-numeric:tabular-nums;}
+  .st-num.pts{font-weight:700; font-size:14px;}
+  .st-num.wins{color:var(--muted); font-size:12px;}
+
+  .ctor-row{padding:12px 14px; border-bottom:1px solid var(--line-soft); display:block; text-decoration:none; color:inherit; cursor:pointer; transition:background .15s ease;}
+  .ctor-row:hover{background:var(--panel-2);}
+  .ctor-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:7px;}
+  .ctor-name{font-size:14px; font-weight:600; display:flex; align-items:center; gap:9px;}
+  .ctor-pts{font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700; font-variant-numeric:tabular-nums;}
+  .ctor-pts small{color:var(--muted); font-weight:400; font-size:10px; margin-left:5px;}
+  .bar-track{height:7px; background:var(--bg); border-radius:4px; overflow:hidden; border:1px solid var(--line-soft);}
+  .bar-fill{height:100%; border-radius:4px; transition:width .5s ease;}
+
+  .panel-box{background:var(--panel); border:1px solid var(--line-soft); border-radius:8px; overflow:hidden; padding:14px 0 4px;}
+  .skeleton{height:52px; border-radius:6px; margin:8px 14px;
+    background:linear-gradient(90deg, var(--panel) 25%, var(--panel-2) 50%, var(--panel) 75%);
+    background-size:200% 100%; animation:shimmer 1.4s infinite;}
+  @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+  .error-banner{margin:16px 0; padding:12px 16px; background:rgba(225,6,0,0.07); border:1px solid rgba(225,6,0,0.35); border-radius:6px; color:#FF7B76; font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.6;}
+  footer{padding:18px 32px 30px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); border-top:1px solid var(--line); line-height:1.7;}
+  footer a{color:var(--accent); text-decoration:none;} footer a:hover{text-decoration:underline;}
+  @media (prefers-reduced-motion: reduce){ *{animation:none !important; transition:none !important;} }
+  @media (max-width:560px){
+    header, main, footer{padding-left:16px; padding-right:16px;}
+    .tabs{padding:0 16px;}
+    .st-head, .st-row{grid-template-columns:36px 1fr 60px;}
+    .st-head span:nth-child(3), .st-num.wins{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="brand-eyebrow">Formula 1 · Championship</div>
+    <h1>积分榜 <span class="thin">Standings</span></h1>
+  </div>
+  <div class="status" role="status"><span class="dot" id="statusDot"></span><span id="statusText">加载中…</span></div>
+</header>
+<div class="kerb" aria-hidden="true"></div>
+<nav class="tabs" aria-label="页面导航">
+  <a class="tab" href="index.html">计时台 Timing</a>
+  <a class="tab" href="analysis.html">分析 Analysis</a>
+  <a class="tab" href="compare.html">对比 Compare</a>
+  <a class="tab" href="schedule.html">赛程 Schedule</a>
+  <a class="tab active" href="standings.html" aria-current="page">积分榜 Standings</a>
+</nav>
+
+<main>
+  <section aria-label="车手积分榜">
+    <div class="section-label" id="driverLabel">车手积分榜 Drivers</div>
+    <div class="panel-box" id="driverWrap"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+  </section>
+  <section aria-label="车队积分榜">
+    <div class="section-label">车队积分榜 Constructors</div>
+    <div class="panel-box" id="ctorWrap"><div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div></div>
+    <div id="errorBanner"></div>
+  </section>
+</main>
+
+<footer>
+  积分数据来自 <a href="https://jolpi.ca" target="_blank" rel="noopener">Jolpica-F1 API</a>（Ergast 继任者，社区维护，非 F1 官方），随每场比赛结束更新。
+</footer>
+
+<script>
+"use strict";
+const ERGAST = 'https://api.jolpi.ca/ergast/f1';
+const $ = (id) => document.getElementById(id);
+
+const TEAM_COLORS = {
+  red_bull:'#3671C6', ferrari:'#E8002D', mercedes:'#27F4D2', mclaren:'#FF8000',
+  aston_martin:'#229971', alpine:'#0093CC', williams:'#64C4FF', rb:'#6692FF',
+  alphatauri:'#6692FF', sauber:'#52E252', audi:'#A1E52A', haas:'#B6BABD',
+  cadillac:'#C4A66A', alfa:'#C92D4B'
+};
+function teamColor(id){ return TEAM_COLORS[id] || '#78829A'; }
+
+function esc(v){
+  return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+async function getJSON(url){
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('请求失败 (' + res.status + ')');
+  return res.json();
+}
+
+function renderDrivers(list, year){
+  let html = '<div class="st-head"><span>Pos</span><span>车手</span><span style="text-align:right">胜场</span><span style="text-align:right">积分</span></div>';
+  html += list.map(s => {
+    const d = s.Driver, c = s.Constructors[s.Constructors.length - 1];
+    const color = teamColor(c ? c.constructorId : '');
+    return (
+      '<a class="st-row' + (s.position === '1' ? ' p1' : '') + '" href="profile.html?id=' + encodeURIComponent(d.driverId) + '&year=' + year + '" title="查看 ' + esc(d.familyName) + ' 档案">' +
+        '<span class="st-pos">' + esc(s.position || '—') + '</span>' +
+        '<span class="st-driver">' +
+          '<span class="team-bar" style="background:' + color + '"></span>' +
+          '<span style="min-width:0">' +
+            '<div class="st-name">' + esc(d.givenName + ' ' + d.familyName) + (d.code ? ' <span style="color:var(--muted);font-weight:400;font-size:11px">' + esc(d.code) + '</span>' : '') + '</div>' +
+            '<div class="st-team">' + esc(c ? c.name : '') + '</div>' +
+          '</span>' +
+        '</span>' +
+        '<span class="st-num wins">' + esc(s.wins) + '</span>' +
+        '<span class="st-num pts">' + esc(s.points) + '</span>' +
+      '</a>'
+    );
+  }).join('');
+  $('driverWrap').innerHTML = html;
+}
+
+function renderConstructors(list, year){
+  const max = Math.max(...list.map(s => parseFloat(s.points) || 0), 1);
+  $('ctorWrap').innerHTML = list.map(s => {
+    const color = teamColor(s.Constructor.constructorId);
+    const pct = Math.max(2, (parseFloat(s.points) || 0) / max * 100);
+    return (
+      '<a class="ctor-row" href="profile.html?type=team&id=' + encodeURIComponent(s.Constructor.constructorId) + '&year=' + year + '" title="查看 ' + esc(s.Constructor.name) + ' 档案">' +
+        '<div class="ctor-top">' +
+          '<span class="ctor-name"><span class="team-bar" style="background:' + color + '; height:18px;"></span>' + esc(s.position) + '. ' + esc(s.Constructor.name) + '</span>' +
+          '<span class="ctor-pts">' + esc(s.points) + '<small>' + esc(s.wins) + ' 胜</small></span>' +
+        '</div>' +
+        '<div class="bar-track"><div class="bar-fill" style="width:' + pct.toFixed(1) + '%; background:' + color + '"></div></div>' +
+      '</a>'
+    );
+  }).join('');
+}
+
+async function load(){
+  try{
+    let year = new Date().getFullYear();
+    let dRes = await getJSON(ERGAST + '/' + year + '/driverstandings.json?limit=40');
+    let dLists = dRes.MRData.StandingsTable.StandingsLists;
+    if (!dLists.length){
+      year -= 1;
+      dRes = await getJSON(ERGAST + '/' + year + '/driverstandings.json?limit=40');
+      dLists = dRes.MRData.StandingsTable.StandingsLists;
+    }
+    if (!dLists.length) throw new Error('暂无积分数据');
+    const cRes = await getJSON(ERGAST + '/' + year + '/constructorstandings.json?limit=20');
+    const cLists = cRes.MRData.StandingsTable.StandingsLists;
+
+    renderDrivers(dLists[0].DriverStandings, year);
+    if (cLists.length) renderConstructors(cLists[0].ConstructorStandings, year);
+    else $('ctorWrap').innerHTML = '<div class="ctor-row">暂无车队积分数据。</div>';
+
+    const round = dLists[0].round;
+    $('driverLabel').textContent = year + ' 车手积分榜 · 截至第 ' + round + ' 站';
+    $('statusText').textContent = year + ' 赛季 · 第 ' + round + ' 站后';
+  } catch(err){
+    $('errorBanner').innerHTML = '<div class="error-banner">加载积分榜失败：' + esc(err.message) + '</div>';
+    $('statusText').textContent = '连接错误';
+  }
+}
+load();
+</script>
+
+</body>
+</html>

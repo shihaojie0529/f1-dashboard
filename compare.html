@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PIT WALL — 车手对比</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,500;0,600;0,700;1,700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0C11; --panel:#10141C; --panel-2:#171C27; --line:#232A38; --line-soft:#1B212D;
+    --text:#EDEFF3; --muted:#78829A; --purple:#B57BFF; --green:#34D77B; --yellow:#FFC53D;
+    --red:#E10600; --accent:#4C8DFF; --kerb-w:14px;
+    --c1:#4C8DFF; --c2:#FF8000;
+  }
+  *{box-sizing:border-box;}
+  html{scrollbar-color:var(--line) var(--bg);}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1100px 520px at 85% -12%, rgba(225,6,0,0.07), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(76,141,255,0.05), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Chakra Petch', sans-serif;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);} a:hover{color:var(--text);}
+  .mono{font-family:'JetBrains Mono', monospace;}
+  header{padding:26px 32px 18px; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:16px;}
+  .brand-eyebrow{font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.28em; color:var(--red); text-transform:uppercase; margin-bottom:7px;}
+  h1{margin:0; font-size:30px; font-weight:700; font-style:italic; letter-spacing:0.05em; text-transform:uppercase; line-height:1;}
+  h1 .thin{font-weight:500; color:var(--muted);}
+  .kerb{height:5px; background:repeating-linear-gradient(-45deg, var(--red) 0 var(--kerb-w), #E9EAEC var(--kerb-w) calc(var(--kerb-w)*2)); border-bottom:1px solid var(--line);}
+  .tabs{display:flex; gap:4px; padding:0 32px; background:var(--panel); border-bottom:1px solid var(--line); overflow-x:auto;}
+  .tab{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); text-decoration:none; padding:13px 16px; border-bottom:2px solid transparent; transition:color .15s ease; white-space:nowrap;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--text); border-bottom-color:var(--red);}
+  .controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+  select{
+    appearance:none; -webkit-appearance:none;
+    background:var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2378829A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center;
+    color:var(--text); border:1px solid var(--line); border-radius:5px;
+    padding:9px 32px 9px 12px; font-family:'JetBrains Mono',monospace; font-size:12px;
+    letter-spacing:0.04em; min-width:130px; cursor:pointer; transition:border-color .15s ease;
+  }
+  select:hover{border-color:var(--muted);}
+  select:focus-visible{outline:2px solid var(--accent); outline-offset:1px;}
+  .status{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); letter-spacing:0.05em; display:flex; align-items:center; gap:8px; padding:8px 12px; border:1px solid var(--line-soft); border-radius:5px; background:rgba(16,20,28,0.6);}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;}
+
+  main{padding:26px 32px 40px; max-width:1080px; margin:0 auto;}
+
+  /* 选择区 */
+  .vs-bar{
+    display:grid; grid-template-columns:1fr 60px 1fr; gap:14px; align-items:center;
+    margin-bottom:12px;
+  }
+  .vs-box{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:18px 20px; border-top:3px solid var(--c1);
+  }
+  .vs-box.right{border-top-color:var(--c2);}
+  .vs-box select{width:100%;}
+  .vs-name{font-size:20px; font-weight:700; font-style:italic; text-transform:uppercase; letter-spacing:0.02em; margin:12px 0 2px;}
+  .vs-team{font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.06em;}
+  .vs-mid{
+    text-align:center; font-family:'JetBrains Mono',monospace; font-weight:700;
+    font-size:20px; font-style:italic; color:var(--muted);
+  }
+  .filter-note{
+    display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:26px;
+    font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:0.04em;
+  }
+  .chip{
+    background:transparent; border:1px solid var(--line); border-radius:20px;
+    color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:10px;
+    padding:5px 12px; cursor:pointer; letter-spacing:0.05em; transition:all .15s ease;
+  }
+  .chip:hover{border-color:var(--muted); color:var(--text);}
+  .chip.active{background:var(--panel-2); border-color:var(--accent); color:var(--text);}
+  .term{border-bottom:1px dotted var(--muted); cursor:help; position:relative;}
+  .term:hover::after{
+    content:attr(data-tip);
+    position:absolute; left:0; top:calc(100% + 7px); z-index:60;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:6px;
+    padding:8px 11px; width:230px; font-size:11px; line-height:1.6; color:var(--text);
+    font-family:'Chakra Petch',sans-serif; letter-spacing:0.02em; text-transform:none; white-space:normal;
+    box-shadow:0 10px 26px rgba(0,0,0,0.5); pointer-events:none;
+  }
+
+  /* 对决行 */
+  .h2h-row{
+    display:grid; grid-template-columns:1fr 170px 1fr; gap:14px; align-items:center;
+    padding:11px 0; border-bottom:1px solid var(--line-soft);
+  }
+  .h2h-label{
+    text-align:center; font-family:'JetBrains Mono',monospace; font-size:10px;
+    color:var(--muted); letter-spacing:0.1em; text-transform:uppercase; line-height:1.5;
+  }
+  .h2h-val{font-family:'JetBrains Mono',monospace; font-size:17px; font-weight:700; font-variant-numeric:tabular-nums;}
+  .h2h-val.l{text-align:right;} .h2h-val.r{text-align:left;}
+  .h2h-val.win{color:var(--text);} .h2h-val.lose{color:var(--muted); font-weight:500;}
+  .h2h-val small{font-size:10px; color:var(--muted); font-weight:400; margin:0 4px;}
+  .bar-duo{display:flex; height:5px; border-radius:3px; overflow:hidden; margin-top:5px; background:var(--bg);}
+  .bar-duo i{display:block; height:100%;}
+  .bar-duo .b1{background:var(--c1);} .bar-duo .b2{background:var(--c2); margin-left:auto;}
+
+  .panel-box{background:var(--panel); border:1px solid var(--line-soft); border-radius:8px; padding:6px 22px 10px; margin-bottom:26px;}
+  .section-label{
+    font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.2em;
+    color:var(--muted); text-transform:uppercase; margin:0 0 14px;
+    display:flex; align-items:center; gap:12px;
+  }
+  .section-label::after{content:''; flex:1; height:1px; background:var(--line);}
+  .section-label .cn{color:var(--text);}
+
+  /* 每站结果表 */
+  .race-line{
+    display:grid; grid-template-columns:minmax(120px,1fr) 70px 46px 70px; gap:10px;
+    align-items:center; padding:7px 0; border-bottom:1px solid var(--line-soft);
+    font-family:'JetBrains Mono',monospace; font-size:11px;
+  }
+  .race-line:last-child{border-bottom:none;}
+  .race-line .rn{color:var(--text); font-family:'Chakra Petch',sans-serif; font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .race-line .p{text-align:center; font-variant-numeric:tabular-nums; border-radius:4px; padding:3px 0;}
+  .race-line .p.w1{background:rgba(76,141,255,0.16); color:var(--c1); font-weight:700;}
+  .race-line .p.w2{background:rgba(255,128,0,0.14); color:var(--c2); font-weight:700;}
+  .race-line .p.dnf{color:#FF7B76;}
+  .race-line .p.skip{color:var(--line);}
+  .race-line .vsmark{text-align:center; color:var(--muted); font-size:9px;}
+  .rl-head{color:var(--muted); font-size:9px; letter-spacing:0.1em; text-transform:uppercase; border-bottom:1px solid var(--line);}
+
+  .empty-state{color:var(--muted); font-size:13px; padding:36px 16px; text-align:center; line-height:1.7;}
+  .skeleton{height:70px; border-radius:8px; margin-bottom:12px;
+    background:linear-gradient(90deg, var(--panel) 25%, var(--panel-2) 50%, var(--panel) 75%);
+    background-size:200% 100%; animation:shimmer 1.4s infinite;}
+  @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+  .error-banner{margin:16px 0; padding:12px 16px; background:rgba(225,6,0,0.07); border:1px solid rgba(225,6,0,0.35); border-radius:6px; color:#FF7B76; font-family:'JetBrains Mono',monospace; font-size:12px; line-height:1.6;}
+  footer{padding:18px 32px 30px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); border-top:1px solid var(--line); line-height:1.7;}
+  footer a{color:var(--accent); text-decoration:none;} footer a:hover{text-decoration:underline;}
+  @media (prefers-reduced-motion: reduce){ *{animation:none !important; transition:none !important;} }
+  @media (max-width:700px){
+    header, main, footer{padding-left:16px; padding-right:16px;} .tabs{padding:0 16px;}
+    .vs-bar{grid-template-columns:1fr; gap:8px;} .vs-mid{padding:2px 0;}
+    .h2h-row{grid-template-columns:1fr 110px 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="brand-eyebrow">Head to Head</div>
+    <h1>对比 <span class="thin">Compare</span></h1>
+  </div>
+  <div class="controls">
+    <select id="yearSelect" aria-label="赛季"></select>
+    <div class="status" role="status"><span class="dot" id="statusDot"></span><span id="statusText">加载中…</span></div>
+  </div>
+</header>
+<div class="kerb" aria-hidden="true"></div>
+<nav class="tabs" aria-label="页面导航">
+  <a class="tab" href="index.html">计时台 Timing</a>
+  <a class="tab" href="analysis.html">分析 Analysis</a>
+  <a class="tab active" href="compare.html" aria-current="page">对比 Compare</a>
+  <a class="tab" href="schedule.html">赛程 Schedule</a>
+  <a class="tab" href="standings.html">积分榜 Standings</a>
+</nav>
+
+<main>
+  <div id="loadingWrap"><div class="skeleton" style="height:130px;"></div><div class="skeleton"></div></div>
+  <div id="errorBanner"></div>
+
+  <div id="content" style="display:none;">
+    <div class="vs-bar">
+      <div class="vs-box">
+        <select id="drv1" aria-label="车手 1"></select>
+        <div class="vs-name" id="name1" style="color:var(--c1)">—</div>
+        <div class="vs-team" id="team1"></div>
+      </div>
+      <div class="vs-mid">VS</div>
+      <div class="vs-box right">
+        <select id="drv2" aria-label="车手 2"></select>
+        <div class="vs-name" id="name2" style="color:var(--c2)">—</div>
+        <div class="vs-team" id="team2"></div>
+      </div>
+    </div>
+    <div class="filter-note">
+      <span>统计口径:</span>
+      <button class="chip" id="fltBoth">只算双方都完赛的比赛</button>
+      <span class="term" data-tip="开启后，任一方退赛（DNF）或缺席的比赛不计入平均名次和交手统计，避免机械故障等运气因素干扰对比。">为什么要过滤？</span>
+    </div>
+
+    <div class="section-label"><span class="cn">赛季对决</span>Season Head-to-Head</div>
+    <div class="panel-box" id="h2hBody"></div>
+
+    <div class="section-label"><span class="cn">每站结果</span>Race by Race</div>
+    <div class="panel-box" id="raceBody"></div>
+  </div>
+</main>
+
+<footer>
+  数据来自 <a href="https://jolpi.ca" target="_blank" rel="noopener">Jolpica-F1 API</a>（Ergast 继任者，社区维护，非 F1 官方）。排位对比基于正赛发车位（含处罚后），非纯排位成绩。
+</footer>
+
+<script>
+"use strict";
+const ERGAST = 'https://api.jolpi.ca/ergast/f1';
+const $ = (id) => document.getElementById(id);
+
+const state = { year: null, races: [], drivers: [], d1: null, d2: null, both: false };
+let loadGen = 0;
+
+function esc(v){ return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function setStatus(t){ $('statusText').textContent = t; }
+function showError(m){ $('errorBanner').innerHTML = '<div class="error-banner">' + esc(m) + '</div>'; }
+async function getJSON(url){
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('请求失败 (' + res.status + ')');
+  return res.json();
+}
+// Jolpica 分页：results 接口一年最多几百条，逐页取
+async function getAllResults(year){
+  const out = [];
+  let offset = 0, total = 1;
+  while (offset < total && offset < 1000){
+    const j = await getJSON(ERGAST + '/' + year + '/results.json?limit=100&offset=' + offset);
+    total = +j.MRData.total;
+    for (const r of (j.MRData.RaceTable.Races || [])) out.push(r);
+    offset += 100;
+  }
+  // 同一站可能拆在两页 -> 按 round 合并
+  const byRound = new Map();
+  for (const race of out){
+    let r = byRound.get(race.round);
+    if (!r){ byRound.set(race.round, race); }
+    else r.Results = r.Results.concat(race.Results);
+  }
+  return [...byRound.values()].sort((a,b) => +a.round - +b.round);
+}
+
+const GP_CN = {
+  'Bahrain Grand Prix':'巴林','Saudi Arabian Grand Prix':'沙特','Australian Grand Prix':'澳大利亚',
+  'Japanese Grand Prix':'日本','Chinese Grand Prix':'中国','Miami Grand Prix':'迈阿密',
+  'Emilia Romagna Grand Prix':'艾米利亚','Monaco Grand Prix':'摩纳哥','Canadian Grand Prix':'加拿大',
+  'Spanish Grand Prix':'西班牙','Austrian Grand Prix':'奥地利','British Grand Prix':'英国',
+  'Hungarian Grand Prix':'匈牙利','Belgian Grand Prix':'比利时','Dutch Grand Prix':'荷兰',
+  'Italian Grand Prix':'意大利','Azerbaijan Grand Prix':'阿塞拜疆','Singapore Grand Prix':'新加坡',
+  'United States Grand Prix':'美国','Mexico City Grand Prix':'墨西哥城','São Paulo Grand Prix':'圣保罗',
+  'Las Vegas Grand Prix':'拉斯维加斯','Qatar Grand Prix':'卡塔尔','Abu Dhabi Grand Prix':'阿布扎比',
+  'Madrid Grand Prix':'马德里'
+};
+function gpShort(name){ return GP_CN[name] || name.replace(' Grand Prix',''); }
+
+async function init(){
+  const years = [];
+  for (let y = new Date().getFullYear(); y >= 2000; y--) years.push(y);
+  $('yearSelect').innerHTML = years.map(y => '<option>' + y + '</option>').join('');
+  $('yearSelect').addEventListener('change', () => loadYear(+$('yearSelect').value));
+  $('drv1').addEventListener('change', () => { state.d1 = $('drv1').value; render(); });
+  $('drv2').addEventListener('change', () => { state.d2 = $('drv2').value; render(); });
+  $('fltBoth').addEventListener('click', () => {
+    state.both = !state.both;
+    $('fltBoth').classList.toggle('active', state.both);
+    render();
+  });
+  await loadYear(years[0]);
+}
+
+async function loadYear(year){
+  const gen = ++loadGen;
+  $('errorBanner').innerHTML = '';
+  $('content').style.display = 'none';
+  $('loadingWrap').style.display = 'block';
+  setStatus('加载 ' + year + ' 赛季全部结果…');
+  try{
+    let races = await getAllResults(year);
+    if (!races.length && year === new Date().getFullYear()){
+      year -= 1;
+      $('yearSelect').value = year;
+      races = await getAllResults(year);
+    }
+    if (gen !== loadGen) return;
+    if (!races.length){ showError('该赛季暂无结果数据。'); setStatus('无数据'); $('loadingWrap').style.display='none'; return; }
+    state.year = year;
+    state.races = races;
+
+    // 收集车手（按积分排序）
+    const pts = new Map(), info = new Map();
+    for (const race of races) for (const r of race.Results){
+      const id = r.Driver.driverId;
+      pts.set(id, (pts.get(id) || 0) + (+r.points || 0));
+      info.set(id, r);
+    }
+    state.drivers = [...pts.entries()].sort((a,b) => b[1] - a[1]).map(([id]) => ({
+      id,
+      name: info.get(id).Driver.givenName + ' ' + info.get(id).Driver.familyName,
+      code: info.get(id).Driver.code || '',
+      team: info.get(id).Constructor.name
+    }));
+
+    const opts = state.drivers.map(d => '<option value="' + esc(d.id) + '">' + esc(d.name) + (d.code ? ' · ' + esc(d.code) : '') + '</option>').join('');
+    $('drv1').innerHTML = opts;
+    $('drv2').innerHTML = opts;
+    // 默认：积分前两名
+    state.d1 = state.drivers[0] ? state.drivers[0].id : null;
+    state.d2 = state.drivers[1] ? state.drivers[1].id : null;
+    if (state.d1) $('drv1').value = state.d1;
+    if (state.d2) $('drv2').value = state.d2;
+
+    render();
+    $('loadingWrap').style.display = 'none';
+    $('content').style.display = 'block';
+    setStatus(year + ' 赛季 · ' + races.length + ' 站 · ' + state.drivers.length + ' 车手');
+  } catch(err){
+    if (gen !== loadGen) return;
+    showError('加载失败：' + err.message);
+    setStatus('连接错误');
+    $('loadingWrap').style.display = 'none';
+  }
+}
+
+function resultOf(race, id){
+  return race.Results.find(r => r.Driver.driverId === id) || null;
+}
+function finished(res){
+  if (!res) return false;
+  const s = res.status || '';
+  return s === 'Finished' || s.startsWith('+'); // "+1 Lap" 等也算完赛
+}
+
+function render(){
+  const { d1, d2 } = state;
+  const D1 = state.drivers.find(d => d.id === d1), D2 = state.drivers.find(d => d.id === d2);
+  if (!D1 || !D2) return;
+  $('name1').textContent = D1.name; $('team1').textContent = D1.team;
+  $('name2').textContent = D2.name; $('team2').textContent = D2.team;
+
+  if (d1 === d2){
+    $('h2hBody').innerHTML = '<div class="empty-state">两边选了同一位车手 —— 换一位来对比吧。</div>';
+    $('raceBody').innerHTML = '';
+    return;
+  }
+
+  // 汇总
+  const agg = {
+    pts: [0,0], wins: [0,0], podium: [0,0], pole: [0,0], dnf: [0,0],
+    raceH2H: [0,0], gridH2H: [0,0],
+    finSum: [0,0], finN: [0,0], gridSum: [0,0], gridN: [0,0]
+  };
+  const lines = [];
+  for (const race of state.races){
+    const r1 = resultOf(race, d1), r2 = resultOf(race, d2);
+    const f1 = finished(r1), f2 = finished(r2);
+    const include = state.both ? (f1 && f2) : true;
+
+    // 全季累计（积分/杆位/退赛不受"双方完赛"过滤影响的合理性有争议，这里统一口径：积分、杆位始终累计；名次类受过滤）
+    if (r1){ agg.pts[0] += +r1.points || 0; if (r1.position === '1') agg.wins[0]++; if (+r1.position <= 3 && f1) agg.podium[0]++; if (r1.grid === '1') agg.pole[0]++; if (!f1) agg.dnf[0]++; }
+    if (r2){ agg.pts[1] += +r2.points || 0; if (r2.position === '1') agg.wins[1]++; if (+r2.position <= 3 && f2) agg.podium[1]++; if (r2.grid === '1') agg.pole[1]++; if (!f2) agg.dnf[1]++; }
+
+    if (include && r1 && r2){
+      // 正赛交手
+      if (+r1.position < +r2.position) agg.raceH2H[0]++; else if (+r2.position < +r1.position) agg.raceH2H[1]++;
+      // 发车位交手（grid 0 = pit lane，放最后）
+      const g1 = +r1.grid || 99, g2 = +r2.grid || 99;
+      if (g1 < g2) agg.gridH2H[0]++; else if (g2 < g1) agg.gridH2H[1]++;
+      agg.finSum[0] += +r1.position; agg.finN[0]++;
+      agg.finSum[1] += +r2.position; agg.finN[1]++;
+      if (g1 < 99){ agg.gridSum[0] += g1; agg.gridN[0]++; }
+      if (g2 < 99){ agg.gridSum[1] += g2; agg.gridN[1]++; }
+    }
+
+    lines.push({ race, r1, r2, f1, f2, include });
+  }
+
+  const avg = (s,n) => n ? (s/n).toFixed(1) : '—';
+  const row = (label, v1, v2, opts) => {
+    opts = opts || {};
+    const n1 = parseFloat(v1), n2 = parseFloat(v2);
+    let w1 = false, w2 = false;
+    if (!isNaN(n1) && !isNaN(n2) && n1 !== n2){
+      const firstWins = opts.lowerBetter ? n1 < n2 : n1 > n2;
+      w1 = firstWins; w2 = !firstWins;
+    }
+    const total = (isNaN(n1) ? 0 : Math.abs(n1)) + (isNaN(n2) ? 0 : Math.abs(n2));
+    const p1 = total ? Math.abs(n1)/total*100 : 50;
+    const labelHtml = opts.tip
+      ? '<span class="term" data-tip="' + esc(opts.tip) + '">' + esc(label) + '</span>'
+      : esc(label);
+    return (
+      '<div class="h2h-row">' +
+        '<span class="h2h-val l ' + (w1 ? 'win' : 'lose') + '">' + v1 + '</span>' +
+        '<span class="h2h-label">' + labelHtml +
+          (opts.bar !== false ? '<span class="bar-duo"><i class="b1" style="width:' + p1.toFixed(1) + '%"></i><i class="b2" style="width:' + (100-p1).toFixed(1) + '%"></i></span>' : '') +
+        '</span>' +
+        '<span class="h2h-val r ' + (w2 ? 'win' : 'lose') + '">' + v2 + '</span>' +
+      '</div>'
+    );
+  };
+
+  $('h2hBody').innerHTML =
+    row('赛季积分', agg.pts[0], agg.pts[1]) +
+    row('分站冠军', agg.wins[0], agg.wins[1]) +
+    row('领奖台', agg.podium[0], agg.podium[1]) +
+    row('杆位', agg.pole[0], agg.pole[1], { tip:'杆位（Pole Position）：排位赛第一名，正赛从第一位发车。这里按正赛发车位第 1 统计。' }) +
+    row('正赛交手', agg.raceH2H[0], agg.raceH2H[1], { tip:'同场比赛谁完赛名次更靠前。' + (state.both ? '已过滤掉任一方未完赛的比赛。' : '包含退赛场次（退赛按最终排名计）。') }) +
+    row('发车位交手', agg.gridH2H[0], agg.gridH2H[1], { tip:'同场比赛谁发车位更靠前（含排位后处罚）。' }) +
+    row('平均完赛名次', avg(agg.finSum[0], agg.finN[0]), avg(agg.finSum[1], agg.finN[1]), { lowerBetter:true, tip:'越小越好。' + (state.both ? '只统计双方都完赛的比赛。' : '') }) +
+    row('平均发车位', avg(agg.gridSum[0], agg.gridN[0]), avg(agg.gridSum[1], agg.gridN[1]), { lowerBetter:true }) +
+    row('退赛 DNF', agg.dnf[0], agg.dnf[1], { lowerBetter:true, tip:'DNF = Did Not Finish，未完赛（事故、机械故障或退赛）。', bar:false });
+
+  // 每站结果
+  const pCell = (res, fin, winCls) => {
+    if (!res) return '<span class="p skip">—</span>';
+    if (!fin) return '<span class="p dnf" title="' + esc(res.status) + '">DNF</span>';
+    return '<span class="p ' + winCls + '">P' + esc(res.position) + '</span>';
+  };
+  $('raceBody').innerHTML =
+    '<div class="race-line rl-head"><span>分站</span><span style="text-align:center">' + esc(D1.code || D1.name.split(' ').pop()) + '</span><span></span><span style="text-align:center">' + esc(D2.code || D2.name.split(' ').pop()) + '</span></div>' +
+    lines.map(L => {
+      let w1 = '', w2 = '';
+      if (L.r1 && L.r2 && L.include){
+        if (+L.r1.position < +L.r2.position) w1 = 'w1'; else if (+L.r2.position < +L.r1.position) w2 = 'w2';
+      }
+      const dim = state.both && !L.include ? ' style="opacity:0.35"' : '';
+      return '<div class="race-line"' + dim + '>' +
+        '<span class="rn">R' + esc(L.race.round) + ' ' + esc(gpShort(L.race.raceName)) + '</span>' +
+        pCell(L.r1, L.f1, w1) +
+        '<span class="vsmark">vs</span>' +
+        pCell(L.r2, L.f2, w2) +
+      '</div>';
+    }).join('');
+}
+
+init();
+</script>
+
+</body>
+</html>

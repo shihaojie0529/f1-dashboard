@@ -5,34 +5,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>PIT WALL — F1 Timing Tower</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,500;0,600;0,700;1,700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg: #0B0E14;
-    --panel: #12161F;
+    --bg: #0A0C11;
+    --panel: #10141C;
     --panel-2: #171C27;
     --line: #232A38;
-    --text: #E8EAED;
-    --muted: #6B7280;
-    --purple: #A855F7;
-    --green: #22C55E;
-    --yellow: #FBBF24;
-    --accent: #3B82F6;
+    --line-soft: #1B212D;
+    --text: #EDEFF3;
+    --muted: #78829A;
+    --purple: #B57BFF;      /* overall fastest — broadcast convention */
+    --green: #34D77B;       /* personal best / live */
+    --yellow: #FFC53D;
+    --red: #E10600;         /* F1 red */
+    --accent: #4C8DFF;
+    --kerb-w: 14px;
   }
   *{box-sizing:border-box;}
+  html{scrollbar-color: var(--line) var(--bg);}
   body{
     margin:0;
     background:
-      radial-gradient(1200px 600px at 80% -10%, rgba(59,130,246,0.08), transparent 60%),
+      radial-gradient(1100px 520px at 85% -12%, rgba(225,6,0,0.07), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(76,141,255,0.05), transparent 60%),
       var(--bg);
     color:var(--text);
-    font-family:'Oswald', sans-serif;
+    font-family:'Chakra Petch', sans-serif;
     min-height:100vh;
+    -webkit-font-smoothing:antialiased;
   }
   .mono{font-family:'JetBrains Mono', monospace;}
+
+  /* ── Header ─────────────────────────────────────────── */
   header{
-    padding:28px 32px 20px;
-    border-bottom:1px solid var(--line);
+    padding:26px 32px 18px;
     display:flex;
     align-items:flex-end;
     justify-content:space-between;
@@ -41,19 +49,38 @@
   }
   .brand-eyebrow{
     font-family:'JetBrains Mono', monospace;
-    font-size:11px;
-    letter-spacing:0.25em;
-    color:var(--purple);
+    font-size:10px;
+    letter-spacing:0.28em;
+    color:var(--red);
     text-transform:uppercase;
-    margin-bottom:6px;
+    margin-bottom:7px;
   }
   h1{
     margin:0;
-    font-size:28px;
+    font-size:30px;
     font-weight:700;
-    letter-spacing:0.03em;
+    font-style:italic;
+    letter-spacing:0.05em;
     text-transform:uppercase;
+    line-height:1;
   }
+  h1 .thin{font-weight:500; color:var(--muted);}
+
+  /* Signature: red-white kerb stripe, like track-edge curbing */
+  .kerb{
+    height:5px;
+    background:repeating-linear-gradient(
+      -45deg,
+      var(--red) 0 var(--kerb-w),
+      #E9EAEC var(--kerb-w) calc(var(--kerb-w) * 2)
+    );
+    border-bottom:1px solid var(--line);
+  }
+
+  .tabs{display:flex; gap:4px; padding:0 32px; background:var(--panel); border-bottom:1px solid var(--line);}
+  .tab{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); text-decoration:none; padding:13px 16px; border-bottom:2px solid transparent; transition:color .15s ease;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--text); border-bottom-color:var(--red);}
   .controls{
     display:flex;
     gap:10px;
@@ -61,17 +88,22 @@
     align-items:center;
   }
   select{
-    background:var(--panel);
+    appearance:none;
+    -webkit-appearance:none;
+    background:var(--panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2378829A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center;
     color:var(--text);
     border:1px solid var(--line);
-    border-radius:4px;
-    padding:8px 12px;
+    border-radius:5px;
+    padding:9px 32px 9px 12px;
     font-family:'JetBrains Mono', monospace;
     font-size:12px;
     letter-spacing:0.04em;
     min-width:150px;
+    cursor:pointer;
+    transition:border-color 0.15s ease;
   }
-  select:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  select:hover{border-color:var(--muted);}
+  select:focus-visible{outline:2px solid var(--accent); outline-offset:1px;}
   .status{
     font-family:'JetBrains Mono', monospace;
     font-size:11px;
@@ -80,6 +112,10 @@
     display:flex;
     align-items:center;
     gap:8px;
+    padding:8px 12px;
+    border:1px solid var(--line-soft);
+    border-radius:5px;
+    background:rgba(16,20,28,0.6);
   }
   .dot{
     width:7px;height:7px;border-radius:50%;
@@ -89,46 +125,167 @@
   .dot.live{background:var(--green); box-shadow:0 0 8px var(--green); animation:pulse 1.6s infinite;}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
 
+  /* ── Weather strip ──────────────────────────────────── */
+  .weather-bar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    padding:10px 32px;
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    color:var(--muted);
+  }
+  .weather-bar .stat{
+    display:flex;
+    align-items:baseline;
+    gap:6px;
+    padding:4px 10px;
+    border:1px solid var(--line-soft);
+    border-radius:4px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+  }
+  .weather-bar .stat strong{color:var(--text); font-size:12px; font-weight:500;}
+
+  /* 赛事阶段横幅 */
+  .phase-banner{
+    display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+    padding:14px 32px;
+    background:linear-gradient(135deg, var(--panel-2), var(--panel));
+    border-bottom:1px solid var(--line);
+  }
+  .phase-tag{
+    font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700;
+    letter-spacing:0.15em; text-transform:uppercase;
+    padding:4px 10px; border-radius:3px; flex-shrink:0;
+  }
+  .phase-tag.off{background:var(--panel); color:var(--muted); border:1px solid var(--line);}
+  .phase-tag.week{background:rgba(255,197,61,0.12); color:var(--yellow); border:1px solid rgba(255,197,61,0.3);}
+  .phase-tag.live{background:rgba(52,215,123,0.12); color:var(--green); border:1px solid rgba(52,215,123,0.35);}
+  .phase-tag.post{background:rgba(225,6,0,0.12); color:#FF7B76; border:1px solid rgba(225,6,0,0.35);}
+  .phase-main{font-size:15px; font-weight:600; letter-spacing:0.02em;}
+  .phase-sub{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums;}
+  .phase-sub strong{color:var(--text); font-weight:500;}
+  .phase-links{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap;}
+  .phase-link{
+    font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.08em;
+    color:var(--accent); text-decoration:none; text-transform:uppercase;
+    padding:7px 13px; border:1px solid var(--line); border-radius:5px;
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .phase-link:hover{border-color:var(--accent); color:var(--text);}
+  @media (max-width:560px){ .phase-banner{padding:12px 16px;} .phase-links{margin-left:0;} }
+
+  /* ── Layout ─────────────────────────────────────────── */
   main{
     display:grid;
-    grid-template-columns: 1fr 380px;
+    grid-template-columns: 1fr 390px;
     gap:0;
+    align-items:start;
   }
-  @media (max-width: 900px){
+  @media (max-width: 940px){
     main{grid-template-columns:1fr;}
+    aside{border-left:none !important; border-top:1px solid var(--line); position:static !important; max-height:none !important;}
   }
 
-  .tower{padding:24px 32px;}
+  /* ── Timing tower ───────────────────────────────────── */
+  .tower{padding:20px 32px 32px;}
+  .tower-bar{
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    padding:0 0 14px;
+  }
+  .mode-switch{display:flex; gap:4px;}
+  .mode-btn{
+    background:var(--panel); border:1px solid var(--line); border-radius:5px;
+    color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:11px;
+    letter-spacing:0.08em; padding:8px 16px; cursor:pointer;
+    transition:all .15s ease;
+  }
+  .mode-btn:hover{color:var(--text); border-color:var(--muted);}
+  .mode-btn.active{color:var(--text); background:var(--panel-2); border-color:var(--red);}
+  .tower-hint{font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); letter-spacing:0.04em;}
+
+  /* 新手模式术语提示 */
+  .term{border-bottom:1px dotted var(--muted); cursor:help; position:relative;}
+  .term:hover::after{
+    content:attr(data-tip);
+    position:absolute; left:0; top:calc(100% + 7px); z-index:60;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:6px;
+    padding:8px 11px; width:230px; font-size:11px; line-height:1.6; color:var(--text);
+    font-family:'Chakra Petch',sans-serif; font-weight:400; font-style:normal;
+    letter-spacing:0.02em; text-transform:none; white-space:normal;
+    box-shadow:0 10px 26px rgba(0,0,0,0.5); pointer-events:none;
+  }
+
+  /* 战斗组 */
+  .bgroup{
+    border:1px solid var(--line); border-radius:8px; margin:0 0 14px;
+    overflow:visible; background:var(--panel);
+  }
+  .bgroup.hot{border-color:rgba(225,6,0,0.45);}
+  .bgroup-head{
+    display:flex; justify-content:space-between; align-items:baseline; gap:10px;
+    padding:10px 16px; border-bottom:1px solid var(--line-soft);
+    font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em;
+    color:var(--muted); text-transform:uppercase;
+  }
+  .bgroup-head strong{color:var(--text); font-size:12px;}
+  .bgroup.hot .bgroup-head strong{color:#FF7B76;}
+  .drs-chip{
+    font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700;
+    letter-spacing:0.08em; padding:2px 7px; border-radius:3px;
+    background:rgba(52,215,123,0.14); color:var(--green); border:1px solid rgba(52,215,123,0.35);
+  }
+  .solo-row{opacity:0.65;}
+
   .tower-head{
     display:grid;
-    grid-template-columns: 44px 1fr 90px 90px 90px;
+    grid-template-columns: var(--tower-cols, 44px 1fr 92px 92px 88px);
     gap:8px;
     padding:0 14px 10px;
     font-family:'JetBrains Mono', monospace;
     font-size:10px;
-    letter-spacing:0.1em;
+    letter-spacing:0.12em;
     color:var(--muted);
     text-transform:uppercase;
     border-bottom:1px solid var(--line);
+    position:sticky;
+    top:0;
+    background:var(--bg);
+    z-index:2;
   }
   .row{
     display:grid;
-    grid-template-columns: 44px 1fr 90px 90px 90px;
+    grid-template-columns: var(--tower-cols, 44px 1fr 92px 92px 88px);
     gap:8px;
     align-items:center;
     padding:10px 14px;
-    border-bottom:1px solid var(--line);
+    border-bottom:1px solid var(--line-soft);
+    border-left:3px solid transparent;
     cursor:pointer;
-    transition: background 0.15s ease, transform 0.15s ease;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
   }
-  .row:hover{background:var(--panel);}
-  .row.selected{background:var(--panel-2); border-left:2px solid var(--purple); padding-left:12px;}
+  .row:hover{background:var(--panel); transform:translateX(2px);}
+  .row:focus-visible{outline:2px solid var(--accent); outline-offset:-2px;}
+  .row.selected{
+    background:var(--panel-2);
+    border-left-color:var(--team, var(--accent));
+  }
   .pos{
     font-family:'JetBrains Mono', monospace;
     font-weight:700;
-    font-size:15px;
+    font-size:14px;
     color:var(--muted);
+    width:28px;
+    height:24px;
+    line-height:24px;
+    text-align:center;
+    border-radius:4px;
+    background:var(--panel);
   }
+  .row.p1 .pos{color:#0A0C11; background:var(--text);}
   .driver{
     display:flex;
     align-items:center;
@@ -136,35 +293,79 @@
     min-width:0;
   }
   .team-bar{
-    width:4px;height:22px;border-radius:2px;flex-shrink:0;
+    width:4px;height:26px;border-radius:2px;flex-shrink:0;
+    box-shadow:0 0 6px color-mix(in srgb, currentColor 0%, transparent);
   }
   .driver-name{
     font-size:14px;
     font-weight:600;
-    letter-spacing:0.02em;
+    letter-spacing:0.03em;
     white-space:nowrap;
     overflow:hidden;
     text-overflow:ellipsis;
   }
   .driver-team{
     font-family:'JetBrains Mono', monospace;
-    font-size:10px;
+    font-size:9px;
+    letter-spacing:0.06em;
     color:var(--muted);
+    text-transform:uppercase;
     white-space:nowrap;
   }
   .num{
     font-family:'JetBrains Mono', monospace;
     font-size:13px;
     text-align:right;
+    font-variant-numeric:tabular-nums;
   }
-  .num.best{color:var(--purple);}
+  .num.best{color:var(--text);}
+  .num.best.fl{color:var(--purple); font-weight:700;}
+  .num.best.fl::before{content:'●'; font-size:7px; vertical-align:2px; margin-right:5px;}
   .num.gap{color:var(--text);}
   .num.muted{color:var(--muted);}
 
+  /* ── Side panel ─────────────────────────────────────── */
   aside{
     border-left:1px solid var(--line);
-    padding:24px 24px;
+    padding:22px 24px 32px;
     background:var(--panel);
+    position:sticky;
+    top:0;
+    max-height:100vh;
+    overflow-y:auto;
+    scrollbar-width:thin;
+  }
+  .driver-head{
+    position:relative;
+    display:flex;
+    gap:14px;
+    align-items:center;
+    margin-bottom:16px;
+    overflow:hidden;
+  }
+  .ghost-num{
+    position:absolute;
+    right:-6px;
+    top:50%;
+    transform:translateY(-50%);
+    font-family:'Chakra Petch', sans-serif;
+    font-style:italic;
+    font-weight:700;
+    font-size:74px;
+    line-height:1;
+    color:transparent;
+    -webkit-text-stroke:1px var(--line);
+    pointer-events:none;
+    user-select:none;
+  }
+  .headshot{
+    width:56px;height:56px;
+    border-radius:6px;
+    object-fit:cover;
+    object-position:top;
+    background:var(--panel-2);
+    border:1px solid var(--line);
+    flex-shrink:0;
   }
   .panel-eyebrow{
     font-family:'JetBrains Mono', monospace;
@@ -175,31 +376,37 @@
     margin-bottom:4px;
   }
   .panel-title{
-    font-size:20px;
+    font-size:21px;
     font-weight:700;
-    margin:0 0 4px;
+    font-style:italic;
+    letter-spacing:0.02em;
+    text-transform:uppercase;
+    margin:0 0 3px;
   }
   .panel-sub{
     font-family:'JetBrains Mono', monospace;
     font-size:11px;
     color:var(--muted);
-    margin-bottom:18px;
   }
   .chart-wrap{
     background:var(--panel-2);
     border:1px solid var(--line);
-    border-radius:6px;
+    border-radius:7px;
     padding:14px;
-    margin-bottom:16px;
+    margin-bottom:14px;
   }
   .chart-label{
     font-family:'JetBrains Mono', monospace;
     font-size:10px;
     color:var(--muted);
-    letter-spacing:0.08em;
+    letter-spacing:0.1em;
     text-transform:uppercase;
-    margin-bottom:8px;
+    margin-bottom:10px;
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
   }
+  .chart-label .hint{font-size:9px; letter-spacing:0.04em; text-transform:none;}
   .empty-state{
     color:var(--muted);
     font-size:13px;
@@ -207,69 +414,33 @@
     padding:40px 0;
   }
   .empty-state strong{color:var(--text);}
-  footer{
-    padding:18px 32px 30px;
-    font-family:'JetBrains Mono', monospace;
-    font-size:11px;
-    color:var(--muted);
-    border-top:1px solid var(--line);
-    line-height:1.7;
-  }
-  footer a{color:var(--accent); text-decoration:none;}
-  .skeleton-row{
-    height:44px;
-    margin:6px 14px;
-    border-radius:4px;
-    background:linear-gradient(90deg, var(--panel) 25%, var(--panel-2) 50%, var(--panel) 75%);
-    background-size:200% 100%;
-    animation:shimmer 1.4s infinite;
-  }
-  @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
-  .error-banner{
-    margin:16px 32px;
-    padding:12px 16px;
-    background:rgba(239,68,68,0.08);
-    border:1px solid rgba(239,68,68,0.3);
-    border-radius:6px;
-    color:#F87171;
-    font-family:'JetBrains Mono', monospace;
-    font-size:12px;
-  }
+
+  /* ── Lap log ────────────────────────────────────────── */
   .lap-item{
     display:grid;
-    grid-template-columns: 52px 60px 1fr;
+    grid-template-columns: 52px 64px 1fr;
     align-items:center;
     gap:8px;
     font-family:'JetBrains Mono', monospace;
     font-size:12px;
+    font-variant-numeric:tabular-nums;
     padding:5px 0;
-    border-bottom:1px solid var(--line);
+    border-bottom:1px solid var(--line-soft);
   }
-  .lap-item .n{color:var(--muted);}
-  .sectors{display:flex; gap:4px;}
+  .lap-item:last-child{border-bottom:none;}
+  .lap-item .n{color:var(--muted); font-size:11px;}
+  .sectors{display:flex; gap:4px; justify-content:flex-end;}
   .sector-chip{
     font-size:10px;
-    padding:2px 5px;
+    padding:2px 6px;
     border-radius:3px;
-    background:var(--panel-2);
-    color:var(--muted);
-  }
-  .sector-chip.overall{background:rgba(168,85,247,0.18); color:var(--purple); font-weight:700;}
-  .sector-chip.personal{background:rgba(34,197,94,0.16); color:var(--green); font-weight:700;}
-
-  .weather-bar{
-    display:flex;
-    gap:22px;
-    flex-wrap:wrap;
-    padding:12px 32px;
     background:var(--panel);
-    border-bottom:1px solid var(--line);
-    font-family:'JetBrains Mono', monospace;
-    font-size:11px;
     color:var(--muted);
   }
-  .weather-bar .stat strong{color:var(--text); font-size:13px; margin-right:4px;}
+  .sector-chip.overall{background:rgba(181,123,255,0.16); color:var(--purple); font-weight:700;}
+  .sector-chip.personal{background:rgba(52,215,123,0.14); color:var(--green); font-weight:700;}
 
+  /* ── Stints & pits ──────────────────────────────────── */
   .stint-row{
     display:flex;
     justify-content:space-between;
@@ -277,8 +448,9 @@
     font-family:'JetBrains Mono', monospace;
     font-size:11px;
     padding:6px 0;
-    border-bottom:1px solid var(--line);
+    border-bottom:1px solid var(--line-soft);
   }
+  .stint-row:last-child{border-bottom:none;}
   .tyre-badge{
     display:inline-block;
     width:20px;height:20px;
@@ -287,22 +459,24 @@
     line-height:20px;
     font-size:10px;
     font-weight:700;
-    color:#0B0E14;
+    color:#0A0C11;
     margin-right:8px;
+    box-shadow:inset 0 0 0 2px rgba(10,12,17,0.35);
   }
   .tyre-SOFT{background:#EF4444;}
   .tyre-MEDIUM{background:#FBBF24;}
   .tyre-HARD{background:#E8EAED;}
   .tyre-INTERMEDIATE{background:#22C55E;}
   .tyre-WET{background:#3B82F6;}
+  .tyre-UNKNOWN,.tyre-TEST_UNKNOWN{background:var(--muted);}
 
-  .lap-select{
-    margin-bottom:10px;
-    width:100%;
-  }
+  /* ── Telemetry ──────────────────────────────────────── */
+  .lap-select{margin-bottom:10px; width:100%;}
   .axis-label{
     font-family:'JetBrains Mono', monospace;
     font-size:9px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
     color:var(--muted);
   }
   .legend{
@@ -327,6 +501,47 @@
     padding:20px 0;
     text-align:center;
   }
+
+  /* ── States & chrome ────────────────────────────────── */
+  .skeleton-row{
+    height:46px;
+    margin:6px 14px;
+    border-radius:5px;
+    background:linear-gradient(90deg, var(--panel) 25%, var(--panel-2) 50%, var(--panel) 75%);
+    background-size:200% 100%;
+    animation:shimmer 1.4s infinite;
+  }
+  @keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+  .error-banner{
+    margin:16px 32px;
+    padding:12px 16px;
+    background:rgba(225,6,0,0.07);
+    border:1px solid rgba(225,6,0,0.35);
+    border-radius:6px;
+    color:#FF7B76;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    line-height:1.6;
+  }
+  footer{
+    padding:18px 32px 30px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    color:var(--muted);
+    border-top:1px solid var(--line);
+    line-height:1.7;
+  }
+  footer a{color:var(--accent); text-decoration:none;}
+  footer a:hover{text-decoration:underline;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+  @media (max-width: 560px){
+    header, .tower, footer{padding-left:16px; padding-right:16px;}
+    .weather-bar{padding-left:16px; padding-right:16px;}
+    .tower{overflow-x:auto;}
+  }
 </style>
 </head>
 <body>
@@ -334,21 +549,38 @@
 <header>
   <div>
     <div class="brand-eyebrow">OpenF1 · Live &amp; Historical Timing</div>
-    <h1>Pit Wall</h1>
+    <h1>Pit <span class="thin">Wall</span></h1>
   </div>
   <div class="controls">
-    <select id="yearSelect"></select>
-    <select id="meetingSelect"><option>Loading meetings…</option></select>
-    <select id="sessionSelect"><option>—</option></select>
-    <div class="status"><span class="dot" id="statusDot"></span><span id="statusText">Connecting…</span></div>
+    <select id="yearSelect" aria-label="Season"></select>
+    <select id="meetingSelect" aria-label="Grand Prix"><option>Loading meetings…</option></select>
+    <select id="sessionSelect" aria-label="Session"><option>—</option></select>
+    <div class="status" role="status"><span class="dot" id="statusDot"></span><span id="statusText">Connecting…</span></div>
   </div>
 </header>
+<div class="kerb" aria-hidden="true"></div>
+<nav class="tabs" aria-label="页面导航">
+  <a class="tab active" href="index.html" aria-current="page">计时台 Timing</a>
+  <a class="tab" href="analysis.html">分析 Analysis</a>
+  <a class="tab" href="compare.html">对比 Compare</a>
+  <a class="tab" href="schedule.html">赛程 Schedule</a>
+  <a class="tab" href="standings.html">积分榜 Standings</a>
+</nav>
 
 <div class="weather-bar" id="weatherBar" style="display:none;"></div>
+<div class="phase-banner" id="phaseBanner" style="display:none;"></div>
 
 <main>
-  <section class="tower">
-    <div class="tower-head">
+  <section class="tower" aria-label="Timing tower">
+    <div class="tower-bar">
+      <div class="mode-switch" role="group" aria-label="计时台模式">
+        <button class="mode-btn active" data-mode="basic">基础</button>
+        <button class="mode-btn" data-mode="pro">专业</button>
+        <button class="mode-btn" data-mode="battle">战斗</button>
+      </div>
+      <span class="tower-hint" id="towerHint">新手提示：鼠标悬停在虚线词条上可查看解释</span>
+    </div>
+    <div class="tower-head" id="towerHead">
       <span>Pos</span>
       <span>Driver</span>
       <span style="text-align:right">Best Lap</span>
@@ -365,10 +597,10 @@
     <div id="errorBanner"></div>
   </section>
 
-  <aside>
+  <aside aria-label="Driver detail">
     <div id="sidePanel">
       <div class="empty-state">
-        Select a driver from the timing tower to see their lap-by-lap trace for this session.
+        Select a driver from the timing tower to see their lap-by-lap trace, tyre strategy, and telemetry for this session.
       </div>
     </div>
   </aside>
@@ -380,40 +612,61 @@
 </footer>
 
 <script>
+"use strict";
 const API = "https://api.openf1.org/v1";
+const LIVE_POLL_MS = 20000;
+
 const state = {
-  meetings: [], sessions: [], drivers: [], laps: [], positions: [], intervals: [],
-  stints: [], pits: [], weather: [],
-  sessionKey: null, selectedDriver: null, selectedLap: null
+  meetings: [], sessions: [], drivers: [], laps: [], stints: [], pits: [], weather: [],
+  lapsByDriver: new Map(),   // driver_number -> laps sorted by lap_number (timed only)
+  latestPos: new Map(),      // driver_number -> latest position record
+  latestGap: new Map(),      // driver_number -> latest interval record
+  sessionBestLap: null,      // fastest lap_duration across the session
+  sessionKey: null,
+  selectedDriver: null,
+  towerMode: 'basic',   // basic | pro | battle
+  isLive: false
 };
 
-const yearSelect = document.getElementById('yearSelect');
-const meetingSelect = document.getElementById('meetingSelect');
-const sessionSelect = document.getElementById('sessionSelect');
-const towerBody = document.getElementById('towerBody');
-const statusDot = document.getElementById('statusDot');
-const statusText = document.getElementById('statusText');
-const errorBanner = document.getElementById('errorBanner');
-const sidePanel = document.getElementById('sidePanel');
-const weatherBar = document.getElementById('weatherBar');
+let sessionGen = 0;     // discards stale session loads
+let telemetryGen = 0;   // discards stale telemetry loads
+let pollTimer = null;
+const telemetryCache = new Map(); // "session-driver-lap" -> {carData, locationData}
 
+const $ = (id) => document.getElementById(id);
+const yearSelect = $('yearSelect'), meetingSelect = $('meetingSelect'), sessionSelect = $('sessionSelect');
+const towerBody = $('towerBody'), statusDot = $('statusDot'), statusText = $('statusText');
+const errorBanner = $('errorBanner'), sidePanel = $('sidePanel'), weatherBar = $('weatherBar');
+const towerHead = $('towerHead');
+
+/* ── Utilities ──────────────────────────────────────── */
+
+// All API-derived strings pass through esc() before hitting innerHTML.
+function esc(v){
+  return String(v ?? '').replace(/[&<>"']/g, c => (
+    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+  ));
+}
+function teamColor(d){
+  return /^[0-9A-Fa-f]{6}$/.test(d.team_colour || '') ? '#' + d.team_colour : '#78829A';
+}
 function setStatus(text, live){
   statusText.textContent = text;
   statusDot.classList.toggle('live', !!live);
 }
 function showError(msg){
-  errorBanner.innerHTML = '<div class="error-banner">' + msg + '</div>';
+  errorBanner.innerHTML = '<div class="error-banner">' + esc(msg) + '</div>';
 }
 function clearError(){ errorBanner.innerHTML = ''; }
 
 function fmtLap(seconds){
-  if (seconds === null || seconds === undefined || isNaN(seconds)) return '—';
+  if (seconds == null || isNaN(seconds)) return '—';
   const m = Math.floor(seconds / 60);
   const s = (seconds % 60).toFixed(3).padStart(6, '0');
   return m + ':' + s;
 }
 function fmtGap(val){
-  if (val === null || val === undefined) return '—';
+  if (val == null) return '—';
   if (typeof val === 'string') return val.toUpperCase();
   return '+' + val.toFixed(3);
 }
@@ -423,33 +676,62 @@ async function getJSON(url){
   if (!res.ok) throw new Error('Request failed (' + res.status + ')');
   return res.json();
 }
+// On failure returns [] instead of throwing, so one missing endpoint
+// (common for very recent or gated sessions) doesn't blank the page.
+async function getJSONSafe(url){
+  try{
+    const res = await fetch(url);
+    if (!res.ok) return { ok:false, data:[] };
+    return { ok:true, data: await res.json() };
+  } catch(err){
+    return { ok:false, data:[] };
+  }
+}
+
+/* ── Init & calendar ────────────────────────────────── */
 
 async function init(){
   const years = [];
   for (let y = 2026; y >= 2023; y--) years.push(y);
   yearSelect.innerHTML = years.map(y => '<option value="' + y + '">' + y + '</option>').join('');
   yearSelect.value = 2026;
-  yearSelect.addEventListener('change', () => loadMeetings(parseInt(yearSelect.value)));
+  yearSelect.addEventListener('change', () => loadMeetings(parseInt(yearSelect.value, 10)));
   meetingSelect.addEventListener('change', () => loadSessions(meetingSelect.value));
   sessionSelect.addEventListener('change', () => loadSession(sessionSelect.value));
+
+  // One delegated listener replaces a listener per row.
+  towerBody.addEventListener('click', (e) => {
+    const row = e.target.closest('.row');
+    if (row) selectDriver(parseInt(row.dataset.driver, 10));
+  });
+  towerBody.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const row = e.target.closest('.row');
+    if (row){ e.preventDefault(); selectDriver(parseInt(row.dataset.driver, 10)); }
+  });
+
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      state.towerMode = b.dataset.mode;
+      document.querySelectorAll('.mode-btn').forEach(x => x.classList.toggle('active', x === b));
+      renderTower();
+    });
+  });
+
   await loadMeetings(2026);
 }
 
 function renderSessionOptions(sessions){
   sessionSelect.innerHTML = sessions.map(s =>
-    '<option value="' + s.session_key + '">' + s.session_name + '</option>'
+    '<option value="' + esc(s.session_key) + '">' + esc(s.session_name) + '</option>'
   ).join('');
 }
 
 // Walks backward through the season's meetings looking for the most recent one
-// whose Race session has actually finished (date_end in the past). This avoids
-// defaulting to an upcoming weekend that has no data yet, or to a Friday practice
-// session when the race itself has already been run.
+// whose Race session has actually finished. Avoids defaulting to an upcoming
+// weekend with no data, or to Friday practice when the race has been run.
 async function findMostRecentCompletedRace(meetings){
   const now = new Date();
-  // Only consider meetings that have actually started — a season finale scheduled
-  // months from now must never be treated as "most recent" just because it's last
-  // in the calendar.
   const started = meetings.filter(m => new Date(m.date_start) <= now);
   const sorted = started.slice().sort((a,b) => new Date(b.date_start) - new Date(a.date_start));
   for (const m of sorted.slice(0, 6)){
@@ -472,14 +754,13 @@ async function loadMeetings(year){
   try{
     let meetings = await getJSON(API + '/meetings?year=' + year);
     if (!meetings.length && year === 2026){
-      // fall back to most recent completed season if the current one has no data yet
       meetings = await getJSON(API + '/meetings?year=2025');
       setStatus('No 2026 data yet — showing 2025 season');
     }
     meetings.sort((a,b) => new Date(a.date_start) - new Date(b.date_start));
     state.meetings = meetings;
     meetingSelect.innerHTML = meetings.map(m =>
-      '<option value="' + m.meeting_key + '">' + m.meeting_name + '</option>'
+      '<option value="' + esc(m.meeting_key) + '">' + esc(m.meeting_name) + '</option>'
     ).join('');
 
     if (!meetings.length){
@@ -497,9 +778,6 @@ async function loadMeetings(year){
       sessionSelect.value = found.raceSession.session_key;
       await loadSession(found.raceSession.session_key);
     } else {
-      // No completed race found yet. Prefer the most recent meeting that has
-      // already started (likely mid-weekend); otherwise fall back to the next
-      // upcoming meeting on the calendar.
       const now = new Date();
       const started = meetings.filter(m => new Date(m.date_start) <= now);
       const fallbackMeeting = started.length ? started[started.length - 1] : meetings[0];
@@ -532,30 +810,50 @@ async function loadSessions(meetingKey){
   }
 }
 
-// Fetches one endpoint; on 404/failure returns [] instead of throwing, so one
-// missing endpoint (common for very recent or gated sessions) doesn't blank the page.
-async function getJSONSafe(url){
-  try{
-    const res = await fetch(url);
-    if (!res.ok) return { ok:false, data:[] };
-    return { ok:true, data: await res.json() };
-  } catch(err){
-    return { ok:false, data:[] };
+/* ── Session data ───────────────────────────────────── */
+
+// Builds fast lookups once per load so renders are O(drivers), not O(drivers × laps).
+function indexSessionData(laps, positions, intervals){
+  const byDriver = new Map();
+  let best = Infinity;
+  for (const l of laps){
+    if (!l.lap_duration) continue;
+    if (l.lap_duration < best) best = l.lap_duration;
+    let arr = byDriver.get(l.driver_number);
+    if (!arr){ arr = []; byDriver.set(l.driver_number, arr); }
+    arr.push(l);
   }
+  for (const arr of byDriver.values()) arr.sort((a,b) => a.lap_number - b.lap_number);
+
+  const latest = (records) => {
+    const map = new Map();
+    for (const r of records){
+      const prev = map.get(r.driver_number);
+      if (!prev || new Date(r.date) >= new Date(prev.date)) map.set(r.driver_number, r);
+    }
+    return map;
+  };
+
+  state.lapsByDriver = byDriver;
+  state.latestPos = latest(positions);
+  state.latestGap = latest(intervals);
+  state.sessionBestLap = best === Infinity ? null : best;
 }
 
 async function loadSession(sessionKey, opts){
   opts = opts || {};
+  const gen = ++sessionGen;
+  stopPolling();
   clearError();
   state.sessionKey = sessionKey;
   state.selectedDriver = null;
-  sidePanel.innerHTML = '<div class="empty-state">Select a driver from the timing tower to see their lap-by-lap trace for this session.</div>';
-  towerBody.innerHTML = '<div class="skeleton-row"></div><div class="skeleton-row"></div><div class="skeleton-row"></div><div class="skeleton-row"></div><div class="skeleton-row"></div>';
+  sidePanel.innerHTML = '<div class="empty-state">Select a driver from the timing tower to see their lap-by-lap trace, tyre strategy, and telemetry for this session.</div>';
+  towerBody.innerHTML = '<div class="skeleton-row"></div>'.repeat(5);
   weatherBar.style.display = 'none';
   setStatus('Loading timing data…');
 
-  const driversRes = await getJSONSafe(API + '/drivers?session_key=' + sessionKey);
-  const [lapsRes, positionsRes, intervalsRes, stintsRes, pitsRes, weatherRes] = await Promise.all([
+  const [driversRes, lapsRes, positionsRes, intervalsRes, stintsRes, pitsRes, weatherRes] = await Promise.all([
+    getJSONSafe(API + '/drivers?session_key=' + sessionKey),
     getJSONSafe(API + '/laps?session_key=' + sessionKey),
     getJSONSafe(API + '/position?session_key=' + sessionKey),
     getJSONSafe(API + '/intervals?session_key=' + sessionKey),
@@ -563,11 +861,11 @@ async function loadSession(sessionKey, opts){
     getJSONSafe(API + '/pit?session_key=' + sessionKey),
     getJSONSafe(API + '/weather?session_key=' + sessionKey)
   ]);
+  if (gen !== sessionGen) return; // a newer selection superseded this load
 
-  const noData = driversRes.data.length === 0 && lapsRes.data.length === 0 && positionsRes.data.length === 0;
+  const noData = !driversRes.data.length && !lapsRes.data.length && !positionsRes.data.length;
 
-  // Auto fall back to the previous session in the list if this one has nothing yet
-  // (guards against silently landing on a not-yet-populated session).
+  // Auto fall back to the previous session in the list if this one has nothing yet.
   if (noData && !opts.isFallback){
     const idx = state.sessions.findIndex(s => String(s.session_key) === String(sessionKey));
     if (idx > 0){
@@ -581,11 +879,10 @@ async function loadSession(sessionKey, opts){
 
   state.drivers = driversRes.data;
   state.laps = lapsRes.data;
-  state.positions = positionsRes.data;
-  state.intervals = intervalsRes.data;
   state.stints = stintsRes.data;
   state.pits = pitsRes.data;
   state.weather = weatherRes.data;
+  indexSessionData(lapsRes.data, positionsRes.data, intervalsRes.data);
   renderWeatherBar();
 
   if (noData){
@@ -595,17 +892,52 @@ async function loadSession(sessionKey, opts){
   }
 
   renderTower();
+
   const sessionInfo = state.sessions.find(s => String(s.session_key) === String(sessionKey));
   const now = new Date();
-  const isLive = sessionInfo && new Date(sessionInfo.date_start) < now && new Date(sessionInfo.date_end) > now;
+  state.isLive = !!(sessionInfo && new Date(sessionInfo.date_start) < now && new Date(sessionInfo.date_end) > now);
   const label = (sessionInfo ? sessionInfo.session_name : 'Session') + ' · ' + state.drivers.length + ' drivers';
-  setStatus(lapsRes.ok ? label : label + ' (partial data)', isLive);
+  setStatus(lapsRes.ok ? label : label + ' (partial data)', state.isLive);
+  if (state.isLive) startPolling();
 }
+
+/* ── Live polling ───────────────────────────────────── */
+
+function startPolling(){
+  stopPolling();
+  pollTimer = setInterval(async () => {
+    if (document.hidden || !state.isLive) return;
+    const gen = sessionGen;
+    const [lapsRes, positionsRes, intervalsRes, weatherRes] = await Promise.all([
+      getJSONSafe(API + '/laps?session_key=' + state.sessionKey),
+      getJSONSafe(API + '/position?session_key=' + state.sessionKey),
+      getJSONSafe(API + '/intervals?session_key=' + state.sessionKey),
+      getJSONSafe(API + '/weather?session_key=' + state.sessionKey)
+    ]);
+    if (gen !== sessionGen) return;
+    if (lapsRes.data.length) state.laps = lapsRes.data;
+    if (weatherRes.data.length){ state.weather = weatherRes.data; renderWeatherBar(); }
+    indexSessionData(state.laps, positionsRes.data, intervalsRes.data);
+    renderTower();
+
+    const sessionInfo = state.sessions.find(s => String(s.session_key) === String(state.sessionKey));
+    if (sessionInfo && new Date(sessionInfo.date_end) <= new Date()){
+      state.isLive = false;
+      setStatus(sessionInfo.session_name + ' · session ended', false);
+      stopPolling();
+    }
+  }, LIVE_POLL_MS);
+}
+function stopPolling(){
+  if (pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+}
+
+/* ── Weather ────────────────────────────────────────── */
 
 function renderWeatherBar(){
   if (!state.weather.length){ weatherBar.style.display = 'none'; return; }
-  const w = state.weather.slice().sort((a,b) => new Date(a.date) - new Date(b.date)).slice(-1)[0];
-  const stat = (label, val) => '<span class="stat"><strong>' + val + '</strong>' + label + '</span>';
+  const w = state.weather.reduce((a,b) => new Date(a.date) > new Date(b.date) ? a : b);
+  const stat = (label, val) => '<span class="stat"><strong>' + esc(val) + '</strong>' + label + '</span>';
   weatherBar.innerHTML =
     stat('Air', (w.air_temperature != null ? w.air_temperature.toFixed(1) + '°C' : '—')) +
     stat('Track', (w.track_temperature != null ? w.track_temperature.toFixed(1) + '°C' : '—')) +
@@ -615,111 +947,236 @@ function renderWeatherBar(){
   weatherBar.style.display = 'flex';
 }
 
-// Best sector times across the whole session (purple, matches broadcast convention)
-function computeOverallBestSectors(){
-  const best = { s1: Infinity, s2: Infinity, s3: Infinity };
-  state.laps.forEach(l => {
-    if (l.duration_sector_1 && l.duration_sector_1 < best.s1) best.s1 = l.duration_sector_1;
-    if (l.duration_sector_2 && l.duration_sector_2 < best.s2) best.s2 = l.duration_sector_2;
-    if (l.duration_sector_3 && l.duration_sector_3 < best.s3) best.s3 = l.duration_sector_3;
-  });
-  return best;
+/* ── Timing tower ───────────────────────────────────── */
+
+const TOWER_COLS = {
+  basic: '44px 1fr 92px 40px 40px 92px',
+  pro:   '44px 1fr 84px 84px 40px 92px 92px 40px'
+};
+const TIPS = {
+  interval: 'Interval（间隔）：与前一名车手之间的时间差。小于 1 秒时后车可以开启 DRS。',
+  gap: 'Gap（差距）：与领先者之间的累计时间差。落后一圈以上显示 +N LAP。',
+  tyre: '当前轮胎：S 软胎（最快但衰减快）· M 中性 · H 硬胎（最耐用）· I 半雨胎 · W 全雨胎。数字是这套胎已用圈数。',
+  pits: '进站次数：干地正赛每位车手必须使用至少两种胎配方，所以至少进站一次。',
+  best: '个人最快圈。紫色圆点表示全场最快圈（Fastest Lap）。',
+  last: '最近完成的一圈用时。'
+};
+function th(label, tipKey){
+  return '<span style="text-align:right"><span class="term" data-tip="' + esc(TIPS[tipKey]) + '">' + label + '</span></span>';
+}
+function tyreNow(dn){
+  const sts = state.stints.filter(s => s.driver_number === dn).sort((a,b) => b.stint_number - a.stint_number);
+  if (!sts.length) return null;
+  const s = sts[0];
+  const laps = state.lapsByDriver.get(dn) || [];
+  const cur = laps.length ? laps[laps.length-1].lap_number : (s.lap_end || s.lap_start);
+  return {
+    compound: (s.compound || 'UNKNOWN').toUpperCase(),
+    age: Math.max(0, (Math.min(cur, s.lap_end || cur) - s.lap_start)) + (s.tyre_age_at_start || 0)
+  };
+}
+function pitCount(dn){ return state.pits.filter(p => p.driver_number === dn).length; }
+function tyreCell(dn){
+  const t = tyreNow(dn);
+  if (!t) return '<span class="num muted mono">—</span>';
+  return '<span style="display:flex; align-items:center; justify-content:flex-end; gap:4px">' +
+    '<span class="tyre-badge tyre-' + esc(t.compound) + '" style="margin:0" title="' + esc(t.compound) + ' · 已用 ' + t.age + ' 圈">' + esc(t.compound.slice(0,1)) + '</span>' +
+    '<span class="num muted mono" style="font-size:10px">' + t.age + '</span></span>';
 }
 
-function fmtSector(sec){
-  if (sec === null || sec === undefined || isNaN(sec)) return '—';
-  return sec.toFixed(3);
-}
-
-function latestByDriver(records, driverNumber){
-  const filtered = records.filter(r => r.driver_number === driverNumber);
-  if (!filtered.length) return null;
-  filtered.sort((a,b) => new Date(a.date) - new Date(b.date));
-  return filtered[filtered.length - 1];
-}
-
-function renderTower(){
+function buildRows(){
   const rows = state.drivers.map(d => {
-    const posRec = latestByDriver(state.positions, d.driver_number);
-    const gapRec = latestByDriver(state.intervals, d.driver_number);
-    const driverLaps = state.laps.filter(l => l.driver_number === d.driver_number && l.lap_duration);
-    const bestLap = driverLaps.length ? Math.min(...driverLaps.map(l => l.lap_duration)) : null;
-    const lastLap = driverLaps.length ? driverLaps.sort((a,b) => a.lap_number - b.lap_number).slice(-1)[0].lap_duration : null;
+    const posRec = state.latestPos.get(d.driver_number);
+    const gapRec = state.latestGap.get(d.driver_number);
+    const driverLaps = state.lapsByDriver.get(d.driver_number) || [];
+    let bestLap = null;
+    for (const l of driverLaps) if (bestLap === null || l.lap_duration < bestLap) bestLap = l.lap_duration;
+    const lastLap = driverLaps.length ? driverLaps[driverLaps.length - 1].lap_duration : null;
     return {
       driver: d,
       position: posRec ? posRec.position : 99,
       bestLap, lastLap,
-      gap: gapRec ? gapRec.gap_to_leader : null
+      gap: gapRec ? gapRec.gap_to_leader : null,
+      interval: gapRec ? gapRec.interval : null
     };
   });
   rows.sort((a,b) => a.position - b.position);
+  return rows;
+}
 
+function rowShell(r, inner){
+  const color = teamColor(r.driver);
+  const name = r.driver.name_acronym || r.driver.full_name || ('Driver ' + r.driver.driver_number);
+  const classes = ['row'];
+  if (state.selectedDriver === r.driver.driver_number) classes.push('selected');
+  if (r.position === 1) classes.push('p1');
+  return (
+    '<div class="' + classes.join(' ') + '" data-driver="' + esc(r.driver.driver_number) + '"' +
+      ' style="--team:' + color + '" tabindex="0" role="button"' +
+      ' aria-label="' + esc(name) + ', position ' + (r.position === 99 ? 'unknown' : r.position) + '">' +
+      '<span class="pos mono">' + (r.position === 99 ? '—' : r.position) + '</span>' +
+      '<span class="driver">' +
+        '<span class="team-bar" style="background:' + color + '"></span>' +
+        '<span style="min-width:0">' +
+          '<div class="driver-name">' + esc(name) + '</div>' +
+          '<div class="driver-team">' + esc(r.driver.team_name || '') + '</div>' +
+        '</span>' +
+      '</span>' + inner +
+    '</div>'
+  );
+}
+
+function renderTower(){
+  const rows = buildRows();
   if (!rows.length){
     towerBody.innerHTML = '<div class="empty-state">No driver data available for this session.</div>';
     return;
   }
+  const mode = state.towerMode;
+  if (mode === 'battle'){ renderBattle(rows); return; }
 
-  towerBody.innerHTML = rows.map(r => {
-    const color = r.driver.team_colour ? ('#' + r.driver.team_colour) : '#6B7280';
-    const name = r.driver.name_acronym || (r.driver.full_name || 'Driver ' + r.driver.driver_number);
-    const selected = state.selectedDriver === r.driver.driver_number ? ' selected' : '';
-    return (
-      '<div class="row' + selected + '" data-driver="' + r.driver.driver_number + '">' +
-        '<span class="pos mono">' + (r.position === 99 ? '—' : r.position) + '</span>' +
-        '<span class="driver">' +
-          '<span class="team-bar" style="background:' + color + '"></span>' +
-          '<span>' +
-            '<div class="driver-name">' + name + '</div>' +
-            '<div class="driver-team">' + (r.driver.team_name || '') + '</div>' +
-          '</span>' +
-        '</span>' +
-        '<span class="num best mono">' + fmtLap(r.bestLap) + '</span>' +
-        '<span class="num muted mono">' + fmtLap(r.lastLap) + '</span>' +
-        '<span class="num gap mono">' + fmtGap(r.gap) + '</span>' +
-      '</div>'
-    );
-  }).join('');
+  document.querySelector('.tower').style.setProperty('--tower-cols', TOWER_COLS[mode]);
+  towerHead.style.display = 'grid';
 
-  towerBody.querySelectorAll('.row').forEach(row => {
-    row.addEventListener('click', () => {
-      const num = parseInt(row.getAttribute('data-driver'));
-      state.selectedDriver = num;
-      renderTower();
-      renderDriverPanel(num);
-    });
-  });
+  const holdsFL = (r) => state.sessionBestLap != null && r.bestLap != null &&
+                  Math.abs(r.bestLap - state.sessionBestLap) < 0.0005;
+
+  if (mode === 'basic'){
+    towerHead.innerHTML = '<span>Pos</span><span>Driver</span>' +
+      th('Interval','interval') + th('胎','tyre') + th('站','pits') + th('Last','last');
+    towerBody.innerHTML = rows.map(r => rowShell(r,
+      '<span class="num gap mono">' + fmtGap(r.interval) + '</span>' +
+      tyreCell(r.driver.driver_number) +
+      '<span class="num muted mono">' + pitCount(r.driver.driver_number) + '</span>' +
+      '<span class="num muted mono">' + fmtLap(r.lastLap) + '</span>'
+    )).join('');
+  } else {
+    towerHead.innerHTML = '<span>Pos</span><span>Driver</span>' +
+      th('Gap','gap') + th('Int','interval') + th('胎','tyre') + th('Best','best') + th('Last','last') + th('站','pits');
+    towerBody.innerHTML = rows.map(r => rowShell(r,
+      '<span class="num gap mono">' + fmtGap(r.gap) + '</span>' +
+      '<span class="num muted mono">' + fmtGap(r.interval) + '</span>' +
+      tyreCell(r.driver.driver_number) +
+      '<span class="num best mono' + (holdsFL(r) ? ' fl' : '') + '">' + fmtLap(r.bestLap) + '</span>' +
+      '<span class="num muted mono">' + fmtLap(r.lastLap) + '</span>' +
+      '<span class="num muted mono">' + pitCount(r.driver.driver_number) + '</span>'
+    )).join('');
+  }
+}
+
+/* 战斗模式：按 interval 自动分组 */
+function renderBattle(rows){
+  towerHead.style.display = 'none';
+  const ranked = rows.filter(r => r.position !== 99);
+  if (!ranked.length){
+    towerBody.innerHTML = '<div class="empty-state">没有位置数据，无法分组。</div>';
+    return;
+  }
+  const groups = [];
+  let cur = [ranked[0]];
+  for (let i = 1; i < ranked.length; i++){
+    const iv = ranked[i].interval;
+    if (typeof iv === 'number' && iv < 2.5) cur.push(ranked[i]);
+    else { groups.push(cur); cur = [ranked[i]]; }
+  }
+  groups.push(cur);
+
+  let html = '<p class="tower-hint" style="margin:0 0 14px; display:block;">按车手之间的实时间隔自动分组（间隔 &lt; 2.5 秒归为同一战斗组）。<span class="term" data-tip="' + esc(TIPS.interval) + '">什么是 Interval？</span> 绿色 DRS 表示间隔小于 1 秒，后车可开启减阻系统尝试超车。</p>';
+
+  for (const g of groups){
+    const isBattle = g.length >= 2;
+    const first = g[0].position, last = g[g.length-1].position;
+    let label;
+    if (first === 1) label = '领先集团';
+    else if (first <= 10 && last >= 10) label = 'P10 积分区争夺';
+    else label = 'P' + first + ' 争夺';
+    const hot = isBattle && g.some((r,i) => i > 0 && typeof r.interval === 'number' && r.interval < 1.0);
+
+    if (!isBattle){
+      html += '<div class="bgroup"><div style="padding:2px 0" class="solo-row">' + rowShell(g[0],
+        '<span class="num gap mono">' + fmtGap(g[0].gap) + '</span>' + tyreCell(g[0].driver.driver_number) +
+        '<span></span><span class="num muted mono">' + fmtLap(g[0].lastLap) + '</span>') + '</div></div>';
+      continue;
+    }
+    html += '<div class="bgroup' + (hot ? ' hot' : '') + '">' +
+      '<div class="bgroup-head"><strong>' + esc(label) + '</strong><span>' + g.length + ' 车争夺 · P' + first + '–P' + last + '</span></div>';
+    for (let i = 0; i < g.length; i++){
+      const r = g[i];
+      const iv = i === 0 ? '—' : fmtGap(r.interval);
+      const drs = i > 0 && typeof r.interval === 'number' && r.interval < 1.0
+        ? '<span class="drs-chip" style="justify-self:end">DRS</span>' : '<span></span>';
+      html += rowShell(r,
+        '<span class="num gap mono">' + iv + '</span>' +
+        tyreCell(r.driver.driver_number) + drs +
+        '<span class="num muted mono">' + fmtLap(r.lastLap) + '</span>');
+    }
+    html += '</div>';
+  }
+  document.querySelector('.tower').style.setProperty('--tower-cols', TOWER_COLS.basic);
+  towerBody.innerHTML = html;
+}
+
+// Selection toggles classes in place — no full tower re-render.
+function selectDriver(driverNumber){
+  if (state.selectedDriver === driverNumber) return;
+  state.selectedDriver = driverNumber;
+  towerBody.querySelectorAll('.row.selected').forEach(el => el.classList.remove('selected'));
+  const row = towerBody.querySelector('.row[data-driver="' + driverNumber + '"]');
+  if (row) row.classList.add('selected');
+  renderDriverPanel(driverNumber);
+}
+
+/* ── Driver panel ───────────────────────────────────── */
+
+function computeOverallBestSectors(){
+  const best = { s1: Infinity, s2: Infinity, s3: Infinity };
+  for (const l of state.laps){
+    if (l.duration_sector_1 && l.duration_sector_1 < best.s1) best.s1 = l.duration_sector_1;
+    if (l.duration_sector_2 && l.duration_sector_2 < best.s2) best.s2 = l.duration_sector_2;
+    if (l.duration_sector_3 && l.duration_sector_3 < best.s3) best.s3 = l.duration_sector_3;
+  }
+  return best;
 }
 
 function renderDriverPanel(driverNumber){
   const driver = state.drivers.find(d => d.driver_number === driverNumber);
-  const laps = state.laps.filter(l => l.driver_number === driverNumber && l.lap_duration).sort((a,b) => a.lap_number - b.lap_number);
-  if (!driver){ return; }
+  if (!driver) return;
+  const laps = state.lapsByDriver.get(driverNumber) || [];
 
-  const color = driver.team_colour ? ('#' + driver.team_colour) : '#6B7280';
+  const color = teamColor(driver);
   const overallBest = computeOverallBestSectors();
   const personalBest = { s1: Infinity, s2: Infinity, s3: Infinity };
-  laps.forEach(l => {
+  for (const l of laps){
     if (l.duration_sector_1 && l.duration_sector_1 < personalBest.s1) personalBest.s1 = l.duration_sector_1;
     if (l.duration_sector_2 && l.duration_sector_2 < personalBest.s2) personalBest.s2 = l.duration_sector_2;
     if (l.duration_sector_3 && l.duration_sector_3 < personalBest.s3) personalBest.s3 = l.duration_sector_3;
-  });
+  }
+
+  const headshot = driver.headshot_url
+    ? '<img class="headshot" src="' + esc(driver.headshot_url) + '" alt="" loading="lazy" onerror="this.remove()">'
+    : '';
 
   let html = '';
-  html += '<div class="panel-eyebrow">#' + driver.driver_number + ' · ' + (driver.team_name || '') + '</div>';
-  html += '<h2 class="panel-title">' + (driver.full_name || driver.name_acronym) + '</h2>';
+  html += '<div class="driver-head">';
+  html += '<span class="ghost-num" aria-hidden="true">' + esc(driver.driver_number) + '</span>';
+  html += headshot;
+  html += '<div>';
+  html += '<div class="panel-eyebrow" style="color:' + color + '">#' + esc(driver.driver_number) + ' · ' + esc(driver.team_name || '') + '</div>';
+  html += '<h2 class="panel-title">' + esc(driver.full_name || driver.name_acronym) + '</h2>';
   html += '<div class="panel-sub">' + laps.length + ' timed laps this session</div>';
+  html += '</div></div>';
 
   if (laps.length >= 2){
-    html += '<div class="chart-wrap"><div class="chart-label">Lap Time Trend</div>' + buildSparkline(laps, color) + '</div>';
+    html += '<div class="chart-wrap"><div class="chart-label"><span>Lap Time Trend</span><span class="hint">● best lap</span></div>' + buildSparkline(laps, color) + '</div>';
   }
 
   // Tyre strategy
   const stints = state.stints.filter(s => s.driver_number === driverNumber).sort((a,b) => a.stint_number - b.stint_number);
   if (stints.length){
-    html += '<div class="chart-wrap"><div class="chart-label">Tyre Strategy</div>';
+    html += '<div class="chart-wrap"><div class="chart-label"><span>Tyre Strategy</span></div>';
     stints.forEach(s => {
       const compound = (s.compound || 'UNKNOWN').toUpperCase();
-      html += '<div class="stint-row"><span><span class="tyre-badge tyre-' + compound + '">' + compound.slice(0,1) + '</span>Stint ' + s.stint_number + ' · Laps ' + s.lap_start + '–' + s.lap_end + '</span><span>' + (s.tyre_age_at_start != null ? s.tyre_age_at_start + ' laps old' : '') + '</span></div>';
+      html += '<div class="stint-row"><span><span class="tyre-badge tyre-' + esc(compound) + '">' + esc(compound.slice(0,1)) + '</span>Stint ' + esc(s.stint_number) + ' · Laps ' + esc(s.lap_start) + '–' + esc(s.lap_end) + '</span><span>' + (s.tyre_age_at_start != null ? esc(s.tyre_age_at_start) + ' laps old' : '') + '</span></div>';
     });
     html += '</div>';
   }
@@ -727,16 +1184,16 @@ function renderDriverPanel(driverNumber){
   // Pit stops
   const pits = state.pits.filter(p => p.driver_number === driverNumber).sort((a,b) => a.lap_number - b.lap_number);
   if (pits.length){
-    html += '<div class="chart-wrap"><div class="chart-label">Pit Stops</div>';
+    html += '<div class="chart-wrap"><div class="chart-label"><span>Pit Stops</span></div>';
     pits.forEach(p => {
-      html += '<div class="stint-row"><span>Lap ' + p.lap_number + '</span><span>' + (p.pit_duration != null ? p.pit_duration.toFixed(1) + 's' : '—') + '</span></div>';
+      html += '<div class="stint-row"><span>Lap ' + esc(p.lap_number) + '</span><span>' + (p.pit_duration != null ? p.pit_duration.toFixed(1) + 's' : '—') + '</span></div>';
     });
     html += '</div>';
   }
 
   // Lap log with sector coloring (purple = overall best, green = personal best)
-  html += '<div class="chart-wrap"><div class="chart-label">Lap Log · Sectors</div>';
-  laps.slice().reverse().slice(0, 10).forEach(l => {
+  html += '<div class="chart-wrap"><div class="chart-label"><span>Lap Log · Sectors</span><span class="hint">last 10</span></div>';
+  laps.slice(-10).reverse().forEach(l => {
     const chip = (val, best, mine) => {
       if (!val) return '<span class="sector-chip">—</span>';
       let cls = 'sector-chip';
@@ -744,7 +1201,7 @@ function renderDriverPanel(driverNumber){
       else if (Math.abs(val - mine) < 0.001) cls += ' personal';
       return '<span class="' + cls + '">' + val.toFixed(3) + '</span>';
     };
-    html += '<div class="lap-item"><span class="n">Lap ' + l.lap_number + '</span><span>' + fmtLap(l.lap_duration) + '</span>' +
+    html += '<div class="lap-item"><span class="n">Lap ' + esc(l.lap_number) + '</span><span>' + fmtLap(l.lap_duration) + '</span>' +
       '<span class="sectors">' +
         chip(l.duration_sector_1, overallBest.s1, personalBest.s1) +
         chip(l.duration_sector_2, overallBest.s2, personalBest.s2) +
@@ -757,14 +1214,15 @@ function renderDriverPanel(driverNumber){
   html += '</div>';
 
   // Telemetry: speed trace + track heatmap for a chosen lap
-  if (laps.length){
-    const fastestLap = laps.slice().sort((a,b) => a.lap_duration - b.lap_duration)[0];
+  let fastestLap = null;
+  for (const l of laps) if (!fastestLap || l.lap_duration < fastestLap.lap_duration) fastestLap = l;
+  if (fastestLap){
     html += '<div class="chart-wrap">';
-    html += '<div class="chart-label">Lap Telemetry</div>';
-    html += '<select class="lap-select mono" id="lapTelemetrySelect">';
+    html += '<div class="chart-label"><span>Lap Telemetry</span></div>';
+    html += '<select class="lap-select mono" id="lapTelemetrySelect" aria-label="Telemetry lap">';
     laps.forEach(l => {
       const sel = l.lap_number === fastestLap.lap_number ? ' selected' : '';
-      html += '<option value="' + l.lap_number + '"' + sel + '>Lap ' + l.lap_number + ' — ' + fmtLap(l.lap_duration) + '</option>';
+      html += '<option value="' + esc(l.lap_number) + '"' + sel + '>Lap ' + esc(l.lap_number) + ' — ' + fmtLap(l.lap_duration) + '</option>';
     });
     html += '</select>';
     html += '<div id="telemetryWrap"><div class="telemetry-loading">Loading car telemetry…</div></div>';
@@ -773,35 +1231,49 @@ function renderDriverPanel(driverNumber){
 
   sidePanel.innerHTML = html;
 
-  if (laps.length){
-    const fastestLap = laps.slice().sort((a,b) => a.lap_duration - b.lap_duration)[0];
-    document.getElementById('lapTelemetrySelect').addEventListener('change', (e) => {
-      loadLapTelemetry(driverNumber, parseInt(e.target.value), color);
+  if (fastestLap){
+    $('lapTelemetrySelect').addEventListener('change', (e) => {
+      loadLapTelemetry(driverNumber, parseInt(e.target.value, 10), color);
     });
     loadLapTelemetry(driverNumber, fastestLap.lap_number, color);
   }
 }
 
+/* ── Telemetry ──────────────────────────────────────── */
+
 async function loadLapTelemetry(driverNumber, lapNumber, color){
-  const wrap = document.getElementById('telemetryWrap');
+  const wrap = $('telemetryWrap');
   if (!wrap) return;
+  const gen = ++telemetryGen;
   wrap.innerHTML = '<div class="telemetry-loading">Loading car telemetry…</div>';
 
-  const lap = state.laps.find(l => l.driver_number === driverNumber && l.lap_number === lapNumber);
+  const laps = state.lapsByDriver.get(driverNumber) || [];
+  const lap = laps.find(l => l.lap_number === lapNumber);
   if (!lap || !lap.date_start || !lap.lap_duration){
     wrap.innerHTML = '<div class="telemetry-loading">No telemetry window available for this lap.</div>';
     return;
   }
-  const startISO = lap.date_start;
-  const endISO = new Date(new Date(lap.date_start).getTime() + lap.lap_duration * 1000 + 500).toISOString();
 
-  const [carRes, locRes] = await Promise.all([
-    getJSONSafe(API + '/car_data?session_key=' + state.sessionKey + '&driver_number=' + driverNumber + '&date>=' + encodeURIComponent(startISO) + '&date<=' + encodeURIComponent(endISO)),
-    getJSONSafe(API + '/location?session_key=' + state.sessionKey + '&driver_number=' + driverNumber + '&date>=' + encodeURIComponent(startISO) + '&date<=' + encodeURIComponent(endISO))
-  ]);
+  const cacheKey = state.sessionKey + '-' + driverNumber + '-' + lapNumber;
+  let cached = telemetryCache.get(cacheKey);
 
-  const carData = carRes.data.filter(d => d.speed != null).sort((a,b) => new Date(a.date) - new Date(b.date));
-  const locationData = locRes.data.filter(d => d.x != null && d.y != null).sort((a,b) => new Date(a.date) - new Date(b.date));
+  if (!cached){
+    const startISO = lap.date_start;
+    const endISO = new Date(new Date(lap.date_start).getTime() + lap.lap_duration * 1000 + 500).toISOString();
+    const [carRes, locRes] = await Promise.all([
+      getJSONSafe(API + '/car_data?session_key=' + state.sessionKey + '&driver_number=' + driverNumber + '&date>=' + encodeURIComponent(startISO) + '&date<=' + encodeURIComponent(endISO)),
+      getJSONSafe(API + '/location?session_key=' + state.sessionKey + '&driver_number=' + driverNumber + '&date>=' + encodeURIComponent(startISO) + '&date<=' + encodeURIComponent(endISO))
+    ]);
+    cached = {
+      carData: carRes.data.filter(d => d.speed != null).sort((a,b) => new Date(a.date) - new Date(b.date)),
+      locationData: locRes.data.filter(d => d.x != null && d.y != null).sort((a,b) => new Date(a.date) - new Date(b.date))
+    };
+    telemetryCache.set(cacheKey, cached);
+    if (telemetryCache.size > 60) telemetryCache.delete(telemetryCache.keys().next().value);
+  }
+
+  if (gen !== telemetryGen) return; // user switched laps while this was loading
+  const { carData, locationData } = cached;
 
   if (!carData.length && !locationData.length){
     wrap.innerHTML = '<div class="telemetry-loading">No car telemetry published for this lap (common for practice sessions or gated live data).</div>';
@@ -810,7 +1282,7 @@ async function loadLapTelemetry(driverNumber, lapNumber, color){
 
   let html = '';
   if (carData.length >= 2){
-    html += '<div class="axis-label" style="margin-bottom:6px;">Speed trace (km/h) with sector splits</div>';
+    html += '<div class="axis-label" style="margin-bottom:6px;">Speed trace (km/h) · sector splits</div>';
     html += buildSpeedTrace(carData, lap, color);
   }
   if (locationData.length >= 2){
@@ -821,47 +1293,68 @@ async function loadLapTelemetry(driverNumber, lapNumber, color){
   wrap.innerHTML = html || '<div class="telemetry-loading">Telemetry data was empty for this lap.</div>';
 }
 
+let svgUid = 0;
+
 function buildSpeedTrace(carData, lap, color){
-  const w = 320, h = 110, pad = 6;
+  const w = 320, h = 116, pad = 8;
   const speeds = carData.map(d => d.speed);
   const min = Math.min(...speeds), max = Math.max(...speeds);
   const range = (max - min) || 1;
   const t0 = new Date(carData[0].date).getTime();
   const totalMs = new Date(carData[carData.length - 1].date).getTime() - t0 || 1;
 
-  const points = carData.map(d => {
+  const pts = carData.map(d => {
     const x = pad + ((new Date(d.date).getTime() - t0) / totalMs) * (w - pad * 2);
     const y = h - pad - ((d.speed - min) / range) * (h - pad * 2);
-    return x.toFixed(1) + ',' + y.toFixed(1);
-  }).join(' ');
+    return [x, y];
+  });
+  const points = pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const areaPoints = points +
+    ' ' + pts[pts.length - 1][0].toFixed(1) + ',' + (h - pad) +
+    ' ' + pts[0][0].toFixed(1) + ',' + (h - pad);
 
-  // Sector boundary lines, positioned by cumulative sector time as a fraction of the lap
-  let sectorLines = '';
+  // Sector boundaries positioned by cumulative sector time as a fraction of the lap.
+  let sectorMarks = '';
+  const sectorLabel = (x, txt) =>
+    '<text x="' + x + '" y="11" font-size="8" fill="#78829A" font-family="JetBrains Mono, monospace" text-anchor="middle">' + txt + '</text>';
   if (lap.duration_sector_1 && lap.duration_sector_2 && lap.lap_duration){
     const f1 = lap.duration_sector_1 / lap.lap_duration;
     const f2 = (lap.duration_sector_1 + lap.duration_sector_2) / lap.lap_duration;
-    [f1, f2].forEach(f => {
-      const x = (pad + f * (w - pad * 2)).toFixed(1);
-      sectorLines += '<line x1="' + x + '" y1="0" x2="' + x + '" y2="' + h + '" stroke="#232A38" stroke-width="1" stroke-dasharray="3,3" />';
+    const x1 = pad + f1 * (w - pad * 2);
+    const x2 = pad + f2 * (w - pad * 2);
+    [x1, x2].forEach(x => {
+      sectorMarks += '<line x1="' + x.toFixed(1) + '" y1="0" x2="' + x.toFixed(1) + '" y2="' + h + '" stroke="#232A38" stroke-width="1" stroke-dasharray="3,3" />';
     });
+    sectorMarks += sectorLabel((pad + x1) / 2, 'S1') + sectorLabel((x1 + x2) / 2, 'S2') + sectorLabel((x2 + w - pad) / 2, 'S3');
   }
 
+  const gid = 'sg' + (++svgUid);
   return (
-    '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '" xmlns="http://www.w3.org/2000/svg">' +
-      sectorLines +
+    '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Speed trace">' +
+      '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0%" stop-color="' + color + '" stop-opacity="0.28"/>' +
+        '<stop offset="100%" stop-color="' + color + '" stop-opacity="0"/>' +
+      '</linearGradient></defs>' +
+      sectorMarks +
+      '<polygon fill="url(#' + gid + ')" points="' + areaPoints + '" />' +
       '<polyline fill="none" stroke="' + color + '" stroke-width="2" points="' + points + '" stroke-linejoin="round" stroke-linecap="round" />' +
+      '<text x="' + pad + '" y="' + (h - 2) + '" font-size="8" fill="#78829A" font-family="JetBrains Mono, monospace">' + Math.round(min) + '</text>' +
+      '<text x="' + pad + '" y="20" font-size="8" fill="#78829A" font-family="JetBrains Mono, monospace">' + Math.round(max) + '</text>' +
     '</svg>'
   );
 }
 
-function nearestSpeed(carData, targetTime){
-  if (!carData.length) return null;
-  let lo = 0, best = carData[0], bestDiff = Math.abs(new Date(carData[0].date).getTime() - targetTime);
-  for (let i = 1; i < carData.length; i++){
-    const diff = Math.abs(new Date(carData[i].date).getTime() - targetTime);
-    if (diff < bestDiff){ bestDiff = diff; best = carData[i]; }
-  }
-  return best.speed;
+// Maps a speed to every location sample with a single forward sweep (both
+// series are time-sorted), instead of scanning all car data per point.
+function mapSpeedsToLocations(locationData, carData){
+  if (!carData.length) return locationData.map(() => null);
+  const times = carData.map(d => new Date(d.date).getTime());
+  let j = 0;
+  return locationData.map(p => {
+    const t = new Date(p.date).getTime();
+    while (j < times.length - 1 && Math.abs(times[j + 1] - t) <= Math.abs(times[j] - t)) j++;
+    return carData[j].speed;
+  });
 }
 
 function colorForSpeed(speed, min, max){
@@ -871,23 +1364,30 @@ function colorForSpeed(speed, min, max){
 }
 
 function buildTrackHeatmap(locationData, carData){
-  const w = 320, h = 220, pad = 14;
+  // Downsample very dense traces so the SVG stays light.
+  const MAX_POINTS = 600;
+  if (locationData.length > MAX_POINTS){
+    const step = Math.ceil(locationData.length / MAX_POINTS);
+    locationData = locationData.filter((_, i) => i % step === 0);
+  }
+
+  const w = 320, h = 220, pad = 16;
   const xs = locationData.map(p => p.x), ys = locationData.map(p => p.y);
   const minX = Math.min(...xs), maxX = Math.max(...xs);
   const minY = Math.min(...ys), maxY = Math.max(...ys);
-  const scaleX = (w - pad * 2) / ((maxX - minX) || 1);
-  const scaleY = (h - pad * 2) / ((maxY - minY) || 1);
-  const scale = Math.min(scaleX, scaleY);
+  const scale = Math.min(
+    (w - pad * 2) / ((maxX - minX) || 1),
+    (h - pad * 2) / ((maxY - minY) || 1)
+  );
+  const offX = (w - (maxX - minX) * scale) / 2;
+  const offY = (h - (maxY - minY) * scale) / 2;
 
-  const toXY = (p) => {
-    const px = pad + (p.x - minX) * scale;
-    const py = h - pad - (p.y - minY) * scale; // flip Y so track reads naturally
-    return [px, py];
-  };
+  const toXY = (p) => [
+    offX + (p.x - minX) * scale,
+    h - offY - (p.y - minY) * scale // flip Y so track reads naturally
+  ];
 
-  const speeds = carData.length
-    ? locationData.map(p => nearestSpeed(carData, new Date(p.date).getTime()))
-    : locationData.map(() => null);
+  const speeds = mapSpeedsToLocations(locationData, carData);
   const validSpeeds = speeds.filter(s => s != null);
   const minS = validSpeeds.length ? Math.min(...validSpeeds) : 0;
   const maxS = validSpeeds.length ? Math.max(...validSpeeds) : 1;
@@ -896,35 +1396,127 @@ function buildTrackHeatmap(locationData, carData){
   for (let i = 1; i < locationData.length; i++){
     const [x1, y1] = toXY(locationData[i - 1]);
     const [x2, y2] = toXY(locationData[i]);
-    const s = speeds[i] != null ? speeds[i] : (speeds[i-1] || minS);
-    const c = validSpeeds.length ? colorForSpeed(s, minS, maxS) : '#3B82F6';
+    const s = speeds[i] != null ? speeds[i] : (speeds[i - 1] ?? minS);
+    const c = validSpeeds.length ? colorForSpeed(s, minS, maxS) : '#4C8DFF';
     segments += '<line x1="' + x1.toFixed(1) + '" y1="' + y1.toFixed(1) + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="' + c + '" stroke-width="3" stroke-linecap="round" />';
   }
 
+  // Start/finish marker at the first sample of the lap.
+  const [sx, sy] = toXY(locationData[0]);
+  const startMark =
+    '<circle cx="' + sx.toFixed(1) + '" cy="' + sy.toFixed(1) + '" r="4.5" fill="#0A0C11" stroke="#EDEFF3" stroke-width="1.5" />' +
+    '<text x="' + (sx + 8).toFixed(1) + '" y="' + (sy + 3).toFixed(1) + '" font-size="8" fill="#78829A" font-family="JetBrains Mono, monospace">S/F</text>';
+
   return (
-    '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '" xmlns="http://www.w3.org/2000/svg">' +
-      segments +
+    '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Track speed map">' +
+      segments + startMark +
     '</svg>'
   );
 }
 
 function buildSparkline(laps, color){
-  const w = 280, h = 90, pad = 8;
+  const w = 300, h = 96, pad = 9;
   const times = laps.map(l => l.lap_duration);
   const min = Math.min(...times), max = Math.max(...times);
   const range = (max - min) || 1;
   const stepX = (w - pad * 2) / (laps.length - 1 || 1);
-  const points = times.map((t, i) => {
-    const x = pad + i * stepX;
-    const y = h - pad - ((t - min) / range) * (h - pad * 2);
-    return x.toFixed(1) + ',' + y.toFixed(1);
-  }).join(' ');
+  let bestIdx = 0;
+  const pts = times.map((t, i) => {
+    if (t < times[bestIdx]) bestIdx = i;
+    return [pad + i * stepX, h - pad - ((t - min) / range) * (h - pad * 2)];
+  });
+  const points = pts.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  const areaPoints = points +
+    ' ' + pts[pts.length - 1][0].toFixed(1) + ',' + (h - pad) +
+    ' ' + pts[0][0].toFixed(1) + ',' + (h - pad);
+  const gid = 'sp' + (++svgUid);
+
   return (
-    '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '" xmlns="http://www.w3.org/2000/svg">' +
+    '<svg viewBox="0 0 ' + w + ' ' + h + '" width="100%" height="' + h + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Lap time trend">' +
+      '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
+        '<stop offset="0%" stop-color="' + color + '" stop-opacity="0.25"/>' +
+        '<stop offset="100%" stop-color="' + color + '" stop-opacity="0"/>' +
+      '</linearGradient></defs>' +
+      '<polygon fill="url(#' + gid + ')" points="' + areaPoints + '" />' +
       '<polyline fill="none" stroke="' + color + '" stroke-width="2" points="' + points + '" stroke-linejoin="round" stroke-linecap="round" />' +
+      '<circle cx="' + pts[bestIdx][0].toFixed(1) + '" cy="' + pts[bestIdx][1].toFixed(1) + '" r="3.5" fill="#B57BFF" stroke="#0A0C11" stroke-width="1.5" />' +
+      '<text x="' + (w - pad) + '" y="' + (h - 2) + '" font-size="8" fill="#78829A" font-family="JetBrains Mono, monospace" text-anchor="end">best ' + fmtLap(times[bestIdx]) + '</text>' +
     '</svg>'
   );
 }
+
+document.addEventListener('visibilitychange', () => {
+  // Catch up immediately when the tab becomes visible during a live session.
+  if (!document.hidden && state.isLive) startPolling();
+});
+
+/* ── 赛事阶段横幅：非比赛周 / 比赛周 / 进行中 / 赛后 ── */
+const ERGAST = 'https://api.jolpi.ca/ergast/f1';
+async function loadPhaseBanner(){
+  try{
+    let year = new Date().getFullYear();
+    let j = await (await fetch(ERGAST + '/' + year + '.json?limit=100')).json();
+    let races = j.MRData.RaceTable.Races || [];
+    if (!races.length){
+      year -= 1;
+      j = await (await fetch(ERGAST + '/' + year + '.json?limit=100')).json();
+      races = j.MRData.RaceTable.Races || [];
+    }
+    if (!races.length) return;
+
+    const now = Date.now();
+    const raceT = (r) => new Date(r.date + 'T' + (r.time || '12:00:00Z')).getTime();
+    const weekendStartT = (r) => {
+      const first = r.FirstPractice || r.SprintQualifying || r.Qualifying;
+      if (first && first.date) return new Date(first.date + 'T' + (first.time || '00:00:00Z')).getTime();
+      return raceT(r) - 2 * 86400000;
+    };
+
+    let next = null, prev = null;
+    for (const r of races){
+      if (raceT(r) + 4 * 3600000 >= now){ next = r; break; }
+      prev = r;
+    }
+    if (!next && races.length) prev = races[races.length - 1];
+
+    const bjt = (ms) => new Date(ms).toLocaleString('zh-CN', { timeZone:'Asia/Shanghai', month:'numeric', day:'numeric', weekday:'short', hour:'2-digit', minute:'2-digit', hour12:false });
+    const cd = (ms) => {
+      const d = Math.floor(ms / 86400000), h = Math.floor(ms / 3600000) % 24, m = Math.floor(ms / 60000) % 60;
+      return d > 0 ? d + ' 天 ' + h + ' 小时' : h > 0 ? h + ' 小时 ' + m + ' 分' : m + ' 分钟';
+    };
+    const el = $('phaseBanner');
+    const links = (arr) => '<span class="phase-links">' + arr.map(a => '<a class="phase-link" href="' + a[1] + '">' + a[0] + '</a>').join('') + '</span>';
+
+    if (prev && now - raceT(prev) < 48 * 3600000 && (!next || now < weekendStartT(next))){
+      el.innerHTML = '<span class="phase-tag post">赛后</span>' +
+        '<span><div class="phase-main">' + esc(prev.raceName) + ' 已结束</div>' +
+        '<div class="phase-sub">下方计时台已加载最新正赛 — 去分析页看回放、策略和事件时间线</div></span>' +
+        links([['回放与策略 →','analysis.html'],['积分榜','standings.html']]);
+    } else if (next && now >= weekendStartT(next) - 24 * 3600000 && now < weekendStartT(next)){
+      el.innerHTML = '<span class="phase-tag week">比赛周</span>' +
+        '<span><div class="phase-main">' + esc(next.raceName) + '</div>' +
+        '<div class="phase-sub">周末即将开始 · 正赛 <strong>' + bjt(raceT(next)) + '</strong>（北京时间）</div></span>' +
+        links([['周末时间表 →','schedule.html']]);
+    } else if (next && now >= weekendStartT(next) && now <= raceT(next) + 4 * 3600000){
+      el.innerHTML = '<span class="phase-tag live">进行中</span>' +
+        '<span><div class="phase-main">' + esc(next.raceName) + ' · 比赛周末</div>' +
+        '<div class="phase-sub">正赛 <strong>' + bjt(raceT(next)) + '</strong>（北京时间）· 距正赛 ' + cd(Math.max(0, raceT(next) - now)) + ' · 下方选择对应节次查看计时</div></span>' +
+        links([['周末时间表','schedule.html'],['事件时间线','analysis.html']]);
+    } else if (next){
+      el.innerHTML = '<span class="phase-tag off">非比赛周</span>' +
+        '<span><div class="phase-main">下一站 R' + esc(next.round) + ' · ' + esc(next.raceName) + '</div>' +
+        '<div class="phase-sub">正赛 <strong>' + bjt(raceT(next)) + '</strong>（北京时间）· 还有 ' + cd(raceT(next) - now) + '</div></span>' +
+        links([['完整赛历 →','schedule.html'],['上一场回放','analysis.html']]);
+    } else {
+      el.innerHTML = '<span class="phase-tag off">赛季结束</span>' +
+        '<span><div class="phase-main">' + year + ' 赛季已收官</div>' +
+        '<div class="phase-sub">回顾任意一场比赛的计时与回放</div></span>' +
+        links([['最终积分榜 →','standings.html']]);
+    }
+    el.style.display = 'flex';
+  } catch(e){ /* 横幅加载失败就不显示 */ }
+}
+loadPhaseBanner();
 
 init();
 </script>
